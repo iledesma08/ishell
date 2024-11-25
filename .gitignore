@@ -54,3 +54,6 @@ dkms.conf
 # VSCode files
 .vscode/
 build/
+
+# Personal files
+used-cmds.md
