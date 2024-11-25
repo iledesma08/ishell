@@ -1,4 +1,4 @@
-#include "include/free.h"
+#include "../include/free.h"
 
 extern base;
 
@@ -15,18 +15,6 @@ t_block fusion(t_block b)
         b->next->prev = b; // Update the previous pointer of the next block
     }
     return b;
-}
-
-// Function to get the block associated with a pointer
-t_block get_block(void* p)
-{
-    char* tmp = p; // Convert to a character pointer
-
-    if (tmp >= (char*)base + BLOCK_SIZE)
-    {                      // Ensure the pointer is within the heap range
-        tmp -= BLOCK_SIZE; // Move to the block metadata
-    }
-    return (t_block)(tmp); // Return the block
 }
 
 // Function to check if a pointer is valid and part of the heap

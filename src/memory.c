@@ -3,6 +3,18 @@
 void* base = NULL; // Pointer to the beginning of the heap
 int method = 0;    // Memory allocation method (0 = First Fit, 1 = Best Fit)
 
+// Function to get the block associated with a pointer
+t_block get_block(void* p)
+{
+    char* tmp = p; // Convert to a character pointer
+
+    if (tmp >= (char*)base + BLOCK_SIZE)
+    {                      // Ensure the pointer is within the heap range
+        tmp -= BLOCK_SIZE; // Move to the block metadata
+    }
+    return (t_block)(tmp); // Return the block
+}
+
 // Function to check and display details of a block
 void check_heap(void* data)
 {

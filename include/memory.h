@@ -19,7 +19,7 @@
  *
  * @param x Cantidad de bytes a alinear.
  */
-#define align(x) (((((x) - 1) >> 3) << 3) + 8)
+#define align(x) (((((x)-1) >> 2) << 2) + 4)
 
 /** Tamaño mínimo de un bloque de memoria. */
 #define BLOCK_SIZE 40
@@ -51,6 +51,14 @@ struct s_block
     void* ptr;             /**< Puntero a la dirección de los datos almacenados. */
     char data[DATA_START]; /**< Área donde comienzan los datos del bloque. */
 };
+
+/**
+ * @brief Obtiene el bloque que contiene una dirección de memoria dada.
+ *
+ * @param p Puntero a la dirección de datos.
+ * @return t_block Puntero al bloque de memoria correspondiente.
+ */
+t_block get_block(void* p);
 
 /**
  * @brief Verifica el estado del heap y detecta bloques libres consecutivos.

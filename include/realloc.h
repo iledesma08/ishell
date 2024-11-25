@@ -1,4 +1,4 @@
-#include "include/memory.h"
+#include "../include/memory.h"
 
 /**
  * @brief Copia el contenido de un bloque de origen a un bloque de destino.

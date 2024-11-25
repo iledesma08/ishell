@@ -1,4 +1,4 @@
-#include "include/memory.h"
+#include "../include/memory.h"
 
 /**
  * @brief Fusiona un bloque libre con su siguiente bloque si también está libre.
@@ -7,14 +7,6 @@
  * @return t_block Puntero al bloque fusionado.
  */
 t_block fusion(t_block b);
-
-/**
- * @brief Obtiene el bloque que contiene una dirección de memoria dada.
- *
- * @param p Puntero a la dirección de datos.
- * @return t_block Puntero al bloque de memoria correspondiente.
- */
-t_block get_block(void* p);
 
 /**
  * @brief Verifica si una dirección de memoria es válida.

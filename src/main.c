@@ -1,4 +1,8 @@
 #include "../include/memory.h"
+#include "../include/calloc.h"
+#include "../include/malloc.h"
+#include "../include/realloc.h"
+#include "../include/free.h"
 
 /*
  * Testing code to test all the functions implemented.
@@ -22,7 +26,6 @@ int main(void){
     *b = 10;
     printf("%p -> %d \n\n",(void*)b,*b);
     
-
     free(a);
     printf("Freeing first variable and using that memory block again using malloc() for third variable: ");
     int *c = (int*)malloc(sizeof(int));
@@ -42,6 +45,9 @@ int main(void){
     for(int i=0; i<10; i++){
         printf(" %d ", *(arr+i));
     }
+    free(c);
+    free(b);
+    free(arr);
 
     printf("\n\n");
 
