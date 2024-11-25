@@ -9,37 +9,38 @@ t_block find_block(t_block* last, size_t size)
     t_block b = base;
 
     if (method == FIRST_FIT)
-    { // First Fit strategy
+    {
         while (b && !(b->free && b->size >= size))
-        {                // Look for the first block large enough and free
-            *last = b;   // Update the last block traversed
-            b = b->next; // Move to the next block
+        {
+            *last = b;
+            b = b->next;
         }
-        return (b); // Return the found block or NULL
+
+        return (b);
     }
     else
-    {                          // Best Fit strategy
-        size_t dif = PAGESIZE; // Difference between the requested size and the block size
-        t_block best = NULL;   // Pointer to the best-fit block
+    {
+        size_t dif = PAGESIZE;
+        t_block best = NULL;
 
         while (b)
         {
             if (b->free)
-            { // If the block is free
+            {
                 if (b->size == size)
-                { // Perfect match
+                {
                     return b;
                 }
                 if (b->size > size && (b->size - size) < dif)
-                { // Smaller difference is better
+                {
                     dif = b->size - size;
                     best = b;
                 }
             }
-            *last = b;   // Update the last traversed block
-            b = b->next; // Move to the next block
+            *last = b;
+            b = b->next;
         }
-        return best; // Return the best-fit block or NULL
+        return best;
     }
 }
 
@@ -47,78 +48,71 @@ t_block find_block(t_block* last, size_t size)
 void split_block(t_block b, size_t s)
 {
     if (b->size <= s + BLOCK_SIZE)
-    { // Check if the block can be split
+    {
         return;
     }
 
-    t_block new;                          // Create a new block for the leftover memory
-    new = (t_block)(b->data + s);         // Assign the new block after the allocated space
-    new->size = b->size - s - BLOCK_SIZE; // Adjust size for the new block
-    new->next = b->next;                  // Link the new block to the next block
-    new->free = 1;                        // Mark the new block as free
-    new->ptr = new->data;
-    new->prev = b;
-    b->next = new; // Update the next link of the original block
-    b->size = s;   // Resize the original block
-    if (new->next)
-    {
-        new->next->prev = new;
-    }
+    t_block new;
+    new = (t_block)(b->data + s);
+    new->size = b->size - s - BLOCK_SIZE;
+    new->next = b->next;
+    new->free = 1;
+    b->size = s;
+    b->next = new;
 }
 
 // Function to extend the heap by creating a new block
 t_block extend_heap(t_block last, size_t s)
 {
-    t_block old_break, new_break;
-    old_break = sbrk(0);
-    new_break = sbrk(BLOCK_SIZE + s);
-    if (new_break == (void *)-1)
+    t_block b;
+    b = mmap(0, s, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+
+    if (b == MAP_FAILED)
     {
         return NULL;
     }
-    old_break->size = s;
-    old_break->free = 0;
-    old_break->next = NULL;
-    old_break->prev = NULL;
-    old_break->ptr = old_break->data;
+    b->size = s;
+    b->next = NULL;
+    b->prev = last;
+    b->ptr = b->data;
+
     if (last)
-    {
-        last->next = old_break;
-    }
-    return (old_break);
+        last->next = b;
+
+    b->free = 0;
+    return b;
 }
 
 // Function to allocate memory
 void* malloc(size_t size)
 {
     t_block b, last;
-    size_t s = align(size); // Align the requested size
+    size_t s;
+    s = align(size);
 
     if (base)
-    { // If the heap exists
+    {
         last = base;
-        b = find_block(&last, s); // Find a suitable block
+        b = find_block(&last, s);
         if (b)
         {
             if ((b->size - s) >= (BLOCK_SIZE + 4))
-            {
-                split_block(b, s); // Split the block if there's excess space
-            }
-            b->free = 0; // Mark the block as allocated
+                split_block(b, s);
+            b->free = 0;
         }
         else
         {
-            b = extend_heap(last, s); // Extend the heap if no block is found
+            b = extend_heap(last, s);
             if (!b)
-                return NULL;
+                return (NULL);
         }
     }
     else
-    { // Initialize the heap
+    {
         b = extend_heap(NULL, s);
         if (!b)
-            return NULL;
-        base = b; // Set the base pointer
+            return (NULL);
+        base = b;
     }
-    return b->data; // Return a pointer to the allocated space
+    return (b->data);
 }

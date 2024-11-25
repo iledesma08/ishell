@@ -6,13 +6,12 @@ extern base;
 t_block fusion(t_block b)
 {
     if (b->next && b->next->free)
-    {                                          // Check if the next block is free
-        b->size += BLOCK_SIZE + b->next->size; // Merge the sizes
-        b->next = b->next->next;               // Skip the merged block
-    }
-    if (b->next)
     {
-        b->next->prev = b; // Update the previous pointer of the next block
+        b->size += BLOCK_SIZE + b->next->size;
+        b->next = b->next->next;
+
+        if (b->next)
+            b->next->prev = b;
     }
     return b;
 }
@@ -21,43 +20,40 @@ t_block fusion(t_block b)
 int valid_addr(void* p)
 {
     if (base)
-    { // Ensure the heap exists
+    {
         if (p > base && p < sbrk(0))
-        {                                    // Check if the pointer is within the heap range
-            return (p == get_block(p)->ptr); // Validate the pointer
+        {
+            t_block b = get_block(p);
+            return b && (p == b->ptr);
         }
     }
-    return (0); // Invalid pointer
+    return (0);
 }
 
 // Function to free allocated memory
 void free(void* ptr)
 {
-    if (valid_addr(ptr))
-    {                               // Ensure the pointer is valid
-        t_block b = get_block(ptr); // Get the block associated with the pointer
-        b->free = 1;                // Mark the block as free
+    t_block b;
 
-        if (b->prev && b->prev->free)
-        {
-            b = fusion(b->prev); // Merge with the previous block if it's free
-        }
+    if (valid_addr(ptr))
+    {
+        b = get_block(ptr);
+        b->free = 1;
 
         if (b->next && b->next->free)
-        {
-            b = fusion(b); // Merge with the next block if it's free
-        }
+            fusion(b);
+        if (b->prev && b->prev->free)
+            fusion(b->prev);
         else
         {
+            if (b->next)
+                b->next->prev = b;
             if (b->prev)
-            {
-                b->prev->next = NULL;
-            }
+                b->prev->next = b;
             else
-            {
-                base = NULL;
-            }
-            brk(b);
+                base = b;
+            b->free = 1;
+            b->prev = NULL;
         }
     }
 }

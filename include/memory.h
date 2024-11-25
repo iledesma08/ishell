@@ -19,7 +19,7 @@
  *
  * @param x Cantidad de bytes a alinear.
  */
-#define align(x) (((((x)-1) >> 2) << 2) + 4)
+#define align(x) (((((x) - 1) >> 3) << 3) + 8)
 
 /** Tamaño mínimo de un bloque de memoria. */
 #define BLOCK_SIZE 40
@@ -44,10 +44,10 @@ typedef struct s_block* t_block;
  */
 struct s_block
 {
-    int free;              /**< Indicador de si el bloque está libre (1) o ocupado (0). */
     size_t size;           /**< Tamaño del bloque de datos. */
-    t_block next;          /**< Puntero al siguiente bloque en la lista enlazada. */
-    t_block prev;          /**< Puntero al bloque anterior en la lista enlazada. */
+    struct s_block* next;  /**< Puntero al siguiente bloque en la lista enlazada. */
+    struct s_block* prev;  /**< Puntero al bloque anterior en la lista enlazada. */
+    int free;              /**< Indicador de si el bloque está libre (1) o ocupado (0). */
     void* ptr;             /**< Puntero a la dirección de los datos almacenados. */
     char data[DATA_START]; /**< Área donde comienzan los datos del bloque. */
 };

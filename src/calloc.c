@@ -4,22 +4,18 @@
 void* calloc(size_t number, size_t size)
 {
     size_t* new;
-    size_t s, i;
+    size_t s4, i;
 
     if (!number || !size)
     {
-        return NULL;
+        return (NULL);
     }
-
-    new = malloc(number * size); // Allocate memory
-
+    new = malloc(number * size);
     if (new)
     {
-        s = align(number * size) << 2;
-        for (i = 0; i < s; i++)
-        {
-            new[i] = 0; // Zero-initialize the memory
-        }
+        s4 = align(number * size) << 2;
+        for (i = 0; i < s4; i++)
+            new[i] = 0;
     }
-    return new;
+    return (new);
 }
