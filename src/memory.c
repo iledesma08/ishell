@@ -1,5 +1,4 @@
-#include "lib/memory/include/memory.h" // Custom memory management header
-#include <sys/mman.h>                  // Memory management functions (e.g., mmap)
+#include "../include/memory.h" // Custom memory management header
 
 // Typedef for memory block structure
 typedef struct s_block* t_block;

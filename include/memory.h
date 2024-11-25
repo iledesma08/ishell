@@ -12,6 +12,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/mman.h>                  // Memory management functions (e.g., mmap)
 
 /**
  * @brief Macro para alinear una cantidad de bytes al siguiente múltiplo de 8.
