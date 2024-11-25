@@ -8,8 +8,10 @@
 
 #pragma once
 
+#include <stdint.h> // Include limits for overflow checks
 #include <stdio.h>
 #include <string.h>
+#include <string.h>   // Include for memset function
 #include <sys/mman.h> // Memory management functions (e.g., mmap)
 #include <sys/types.h>
 #include <unistd.h>

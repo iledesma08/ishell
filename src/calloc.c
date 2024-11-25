@@ -3,19 +3,20 @@
 // Function to allocate zero-initialized memory
 void* calloc(size_t number, size_t size)
 {
-    size_t* new;
-    size_t s4, i;
-
-    if (!number || !size)
+    // Prevent integer overflow when multiplying number and size
+    if (number == 0 || size == 0 || number > SIZE_MAX / size)
     {
-        return (NULL);
+        return NULL; // If overflow, return NULL to indicate allocation failure
     }
-    new = malloc(number * size);
+
+    size_t total_size = number * size;
+
+    // Allocate memory using malloc
+    void* new = malloc(total_size);
     if (new)
     {
-        s4 = align(number * size) << 2;
-        for (i = 0; i < s4; i++)
-            new[i] = 0;
+        // Set allocated memory to zero using memset for better efficiency
+        memset(new, 0, total_size);
     }
-    return (new);
+    return new; // Return the allocated and zero-initialized memory
 }
