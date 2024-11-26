@@ -1,61 +1,61 @@
-#include "../include/malloc.h"
+#include "../include/malloc.h" // Include the header file for memory allocation functions.
 
-extern void* base;                   // Base of the heap
-extern int method;                   // Allocation method
-extern pthread_mutex_t memory_mutex; // Mutex to synchronize memory operations
+extern void* base;                   // Global pointer to the beginning of the heap.
+extern int method;                   // Global variable indicating the memory allocation strategy.
+extern pthread_mutex_t memory_mutex; // Mutex for thread-safe memory operations.
 
-extern size_t total_allocated_memory; // Total allocated memory
+extern size_t total_allocated_memory; // Tracks the total memory allocated by the custom allocator.
 
-unsigned long malloc_ctr = 0;
+unsigned long malloc_ctr = 0; // Counter for the number of malloc operations performed.
 
-// Function to find a suitable memory block based on the allocation method
+/* Finds a suitable memory block based on the selected allocation method. */
 t_block find_block(t_block* last, size_t size)
 {
-    t_block b = base;
+    t_block b = base; // Start searching from the base of the heap.
 
-    if (method == FIRST_FIT)
+    if (method == FIRST_FIT) // First Fit strategy: find the first block that fits.
     {
-        while (b && !(b->free && b->size >= size))
+        while (b && !(b->free && b->size >= size)) // Traverse until a suitable block is found.
         {
-            *last = b;
-            b = b->next;
+            *last = b;   // Keep track of the last block traversed.
+            b = b->next; // Move to the next block.
         }
-        return b;
+        return b; // Return the found block or NULL if none is suitable.
     }
-    else if (method == BEST_FIT)
+    else if (method == BEST_FIT) // Best Fit strategy: find the smallest block that fits.
     {
-        size_t diff = (size_t)-1; // Initialize to maximum size_t value
-        t_block best = NULL;
+        size_t diff = (size_t)-1; // Initialize difference to the largest possible value.
+        t_block best = NULL;      // Pointer to the best-fit block.
 
         while (b)
         {
-            if (b->free && b->size >= size)
+            if (b->free && b->size >= size) // Check if the block is free and fits the requested size.
             {
-                if (b->size - size < diff)
+                if (b->size - size < diff) // Update best fit if the current block is a closer match.
                 {
                     diff = b->size - size;
                     best = b;
                 }
-                if (diff == 0)
-                { // Perfect fit
+                if (diff == 0) // If the block perfectly fits, stop searching.
+                {
                     break;
                 }
             }
             *last = b;
             b = b->next;
         }
-        return best;
+        return best; // Return the best-fit block or NULL.
     }
-    else if (method == WORST_FIT)
+    else if (method == WORST_FIT) // Worst Fit strategy: find the largest block that fits.
     {
-        size_t max_size = 0;
-        t_block worst = NULL;
+        size_t max_size = 0;  // Initialize the maximum size to 0.
+        t_block worst = NULL; // Pointer to the worst-fit block.
 
         while (b)
         {
-            if (b->free && b->size >= size)
+            if (b->free && b->size >= size) // Check if the block is free and fits the requested size.
             {
-                if (b->size > max_size)
+                if (b->size > max_size) // Update worst fit if the current block is larger.
                 {
                     max_size = b->size;
                     worst = b;
@@ -64,117 +64,114 @@ t_block find_block(t_block* last, size_t size)
             *last = b;
             b = b->next;
         }
-        return worst;
+        return worst; // Return the worst-fit block or NULL.
     }
     else
     {
-        // Default to First Fit if method is unrecognized
+        // Default to First Fit if the method is invalid or unrecognized.
         while (b && !(b->free && b->size >= size))
         {
             *last = b;
             b = b->next;
         }
-        return b;
+        return b; // Return the found block or NULL.
     }
 }
 
-// Function to split a memory block into two
+/* Splits a memory block into two if it is larger than the requested size. */
 void split_block(t_block b, size_t s)
 {
-    // Ensure there is enough space for the new block
-    if (b->size > s + BLOCK_SIZE)
+    if (b->size > s + BLOCK_SIZE) // Ensure there is enough space to split.
     {
-        t_block new_block = (t_block)(b->data + s); // Calculate address of the new block
-        new_block->size = b->size - s - BLOCK_SIZE; // Update size of the new block
-        new_block->next = b->next;                  // Link the new block to the next block
-        new_block->prev = b;                        // Update the previous link of the new block
-        new_block->free = TRUE;                     // Mark new block as free
-        new_block->ptr = new_block->data;           // Set pointer to the data segment of the new block
+        t_block new_block = (t_block)(b->data + s); // Calculate the address of the new block.
+        new_block->size = b->size - s - BLOCK_SIZE; // Adjust the size of the new block.
+        new_block->next = b->next;                  // Link the new block to the next block.
+        new_block->prev = b;                        // Set the previous block of the new block.
+        new_block->free = TRUE;                     // Mark the new block as free.
+        new_block->ptr = new_block->data;           // Initialize the data pointer for the new block.
 
-        b->size = s;         // Update the size of the current block
-        b->next = new_block; // Link current block to the new block
+        b->size = s;         // Update the size of the current block.
+        b->next = new_block; // Link the current block to the new block.
         if (new_block->next)
         {
-            new_block->next->prev = new_block; // Update the previous link of the next block
+            new_block->next->prev = new_block; // Update the previous link of the next block.
         }
     }
 }
 
-// Function to extend the heap by creating a new block
+/* Extends the heap by creating a new memory block. */
 t_block extend_heap(t_block last, size_t s)
 {
-    t_block b;
-    b = mmap(0, s + BLOCK_SIZE, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    t_block b = mmap(0, s + BLOCK_SIZE, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0); // Allocate memory.
 
-    if (b == MAP_FAILED)
+    if (b == MAP_FAILED) // Check if memory allocation failed.
     {
         return NULL;
     }
-    b->size = s;
-    b->next = NULL;
-    b->prev = last;
-    b->ptr = b->data;
-    b->free = 0;
-    b->alloc_method = method;
+    b->size = s;              // Set the size of the new block.
+    b->next = NULL;           // New block is at the end, so no next block.
+    b->prev = last;           // Link the new block to the previous block.
+    b->ptr = b->data;         // Initialize the data pointer.
+    b->free = 0;              // Mark the block as allocated.
+    b->alloc_method = method; // Record the allocation method.
 
     if (last)
-        last->next = b;
+        last->next = b; // Link the previous block to the new block.
 
-    return b;
+    return b; // Return the new block.
 }
 
-// Function to allocate memory
+/* Allocates a block of memory of the requested size. */
 void* malloc(size_t size)
 {
-    pthread_mutex_lock(&memory_mutex);
+    pthread_mutex_lock(&memory_mutex); // Lock the mutex for thread safety.
 
-    t_block b, last;
-    size_t s;
-    struct timespec start, end;
+    t_block b, last;            // Variables for the current and last blocks.
+    size_t s;                   // Aligned size of the requested memory.
+    struct timespec start, end; // Variables for timing the operation.
 
-    // Start timing the allocation process
-    clock_gettime(CLOCK_MONOTONIC, &start);
+    clock_gettime(CLOCK_MONOTONIC, &start); // Start timing.
 
-    s = align(size);
+    s = align(size); // Align the requested size.
 
-    if (base)
+    if (base) // Check if the heap has been initialized.
     {
         last = base;
-        b = find_block(&last, s);
+        b = find_block(&last, s); // Try to find a suitable block.
         if (b)
         {
-            if ((b->size - s) >= (BLOCK_SIZE + BLOCK_THRESHOLD))
+            if ((b->size - s) >= (BLOCK_SIZE + BLOCK_THRESHOLD)) // Check if the block can be split.
             {
-                split_block(b, s);
+                split_block(b, s); // Split the block if necessary.
             }
-            b->free = 0;
+            b->free = 0; // Mark the block as allocated.
         }
         else
         {
-            b = extend_heap(last, s);
+            b = extend_heap(last, s); // Extend the heap if no suitable block was found.
             if (!b)
             {
-                pthread_mutex_unlock(&memory_mutex);
-                return NULL; // Return NULL if heap extension failed
+                pthread_mutex_unlock(&memory_mutex); // Unlock the mutex before returning.
+                return NULL;                         // Return NULL if the heap extension failed.
             }
         }
     }
     else
     {
-        b = extend_heap(NULL, s);
+        b = extend_heap(NULL, s); // Initialize the heap if it is empty.
         if (!b)
         {
-            pthread_mutex_unlock(&memory_mutex);
-            return NULL; // Return NULL if heap extension failed
+            pthread_mutex_unlock(&memory_mutex); // Unlock the mutex before returning.
+            return NULL;                         // Return NULL if the heap extension failed.
         }
-        base = b;
+        base = b; // Set the base of the heap.
     }
 
-    b->alloc_method = method;
-    total_allocated_memory += b->size;
-    void* ptr = b->data;
-    log_mem_operation(MALLOC, ptr, size, &malloc_ctr);
+    b->alloc_method = method;                          // Record the allocation method for the block.
+    total_allocated_memory += b->size;                 // Update the total allocated memory.
+    void* ptr = b->data;                               // Get the pointer to the allocated data.
+    log_mem_operation(MALLOC, ptr, size, &malloc_ctr); // Log the memory allocation operation.
 
-    pthread_mutex_unlock(&memory_mutex);
-    return ptr;
+    pthread_mutex_unlock(&memory_mutex); // Unlock the mutex after completing the allocation.
+    return ptr;                          // Return the pointer to the allocated memory.
 }

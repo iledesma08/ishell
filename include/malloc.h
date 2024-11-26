@@ -1,36 +1,60 @@
-#include "../include/memory.h"
-#include "../include/mem_logging.h"
+/**
+ * @file malloc.h
+ * @brief Header file for custom memory allocation functions.
+ *
+ * This header defines the function prototypes for memory allocation,
+ * including finding, splitting, and expanding memory blocks, as well
+ * as allocating a block of memory using the custom allocator.
+ */
+
+#include "../include/mem_logging.h" ///< Includes functionality for logging memory operations.
+#include "../include/memory.h"      ///< Includes custom memory management definitions.
 
 /**
- * @brief Encuentra un bloque libre que tenga al menos el tamaño solicitado.
+ * @brief Finds a free memory block that can fit the requested size.
  *
- * @param last Puntero al último bloque.
- * @param size Tamaño solicitado.
- * @return t_block Puntero al bloque encontrado, o NULL si no se encuentra ninguno.
+ * Searches the heap for a free block of memory that is at least as large
+ * as the requested size. If a suitable block is found, it is returned.
+ * Otherwise, NULL is returned.
+ *
+ * @param last Pointer to the last block traversed during the search. Updated to point to the final block checked.
+ * @param size Requested size in bytes.
+ * @return t_block Pointer to the found memory block, or NULL if no suitable block is available.
  */
 t_block find_block(t_block* last, size_t size);
 
 /**
- * @brief Divide un bloque de memoria en dos, si el tamaño solicitado es menor que el bloque disponible.
+ * @brief Splits a memory block into two if it is larger than the requested size.
  *
- * @param b Bloque a dividir.
- * @param s Tamaño del nuevo bloque.
+ * Adjusts the size of the current block to match the requested size, and creates
+ * a new block with the remaining space. The new block is marked as free and linked
+ * to the current block.
+ *
+ * @param b Pointer to the block to split.
+ * @param s Size of the new block in bytes.
  */
 void split_block(t_block b, size_t s);
 
 /**
- * @brief Expande el heap para crear un nuevo bloque de memoria.
+ * @brief Expands the heap by creating a new memory block.
  *
- * @param last Último bloque del heap.
- * @param s Tamaño del nuevo bloque.
- * @return t_block Puntero al nuevo bloque creado.
+ * Extends the heap by allocating a new block of memory and linking it to the
+ * existing heap structure. If the allocation fails, NULL is returned.
+ *
+ * @param last Pointer to the last block in the current heap.
+ * @param s Size of the new block in bytes.
+ * @return t_block Pointer to the newly created block, or NULL if allocation fails.
  */
 t_block extend_heap(t_block last, size_t s);
 
 /**
- * @brief Asigna un bloque de memoria del tamaño solicitado.
+ * @brief Allocates a block of memory of the requested size.
  *
- * @param size Tamaño en bytes del bloque a asignar.
- * @return void* Puntero al área de datos asignada.
+ * Attempts to find a suitable free block in the heap or extends the heap if
+ * no suitable block is available. Returns a pointer to the allocated memory,
+ * or NULL if the allocation fails.
+ *
+ * @param size Requested size in bytes for the memory block.
+ * @return void* Pointer to the allocated memory block, or NULL if allocation fails.
  */
 void* malloc(size_t size);

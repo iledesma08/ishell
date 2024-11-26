@@ -1,97 +1,106 @@
-#include "../include/memory.h" // Custom memory management header
+#include "../include/memory.h" // Includes the custom memory management library header.
 
-extern t_log_entry* log_head; // Head of the log list
+extern t_log_entry* log_head; // External variable pointing to the head of the memory operation log list.
 
-void* base = NULL;            // Pointer to the beginning of the heap
-int method = FIRST_FIT;       // Memory allocation method (0 = First Fit, 1 = Best Fit)
-int enable_unmapping = FALSE; // Enable unmapping of freed memory blocks
-typedef struct s_block* t_block;
-pthread_mutex_t memory_mutex = PTHREAD_MUTEX_INITIALIZER; // Mutex for thread safety
+void* base = NULL;                                        // Pointer to the beginning of the memory heap.
+int method = FIRST_FIT;                                   // Memory allocation method; default is First Fit (0).
+int enable_unmapping = FALSE;                             // Flag to enable or disable unmapping of freed memory blocks.
+typedef struct s_block* t_block;                          // Alias for a pointer to the `s_block` structure.
+pthread_mutex_t memory_mutex = PTHREAD_MUTEX_INITIALIZER; // Mutex for synchronizing memory operations across threads.
 
-// Memory amounts to be tracked
-size_t total_allocated_memory = 0;
-size_t total_freed_memory = 0;
+// Memory usage statistics.
+size_t total_allocated_memory = 0; // Tracks the total allocated memory.
+size_t total_freed_memory = 0;     // Tracks the total freed memory.
 
+// Initializes the memory manager, setting up a recursive mutex for thread safety.
 void memory_manager_init()
 {
     pthread_mutexattr_t attr;
-    pthread_mutexattr_init(&attr);
-    pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
-    pthread_mutex_init(&memory_mutex, &attr);
-    pthread_mutexattr_destroy(&attr);
+    pthread_mutexattr_init(&attr);                             // Initialize mutex attributes.
+    pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE); // Set mutex to recursive type.
+    pthread_mutex_init(&memory_mutex, &attr);                  // Initialize the mutex with the configured attributes.
+    pthread_mutexattr_destroy(&attr); // Destroy the mutex attributes as they are no longer needed.
 }
 
+// Cleans up the memory manager by destroying the mutex.
 void memory_manager_cleanup()
 {
-    pthread_mutex_destroy(&memory_mutex);
+    pthread_mutex_destroy(&memory_mutex); // Destroy the mutex to release resources.
 }
 
-// Function to get the block associated with a pointer
+// Retrieves the memory block metadata associated with a given pointer.
 t_block get_block(void* p)
 {
-    if (p == NULL)
+    if (p == NULL) // If the pointer is null, return NULL.
     {
         return NULL;
     }
+    // Calculate the start of the block structure using the offset of the `data` field.
     return (t_block)((char*)p - offsetof(struct s_block, data));
 }
 
+// Sets the memory allocation method (First Fit, Best Fit, or Worst Fit).
 void set_method(int m)
 {
-    if (m == FIRST_FIT || m == BEST_FIT || m == WORST_FIT)
+    if (m == FIRST_FIT || m == BEST_FIT || m == WORST_FIT) // Check if the method is valid.
     {
-        method = m;
+        method = m; // Set the allocation method.
     }
     else
     {
-        printf("Error: invalid method\n");
+        printf("Error: invalid method\n"); // Print an error if the method is invalid.
     }
 }
 
+// Performs a diagnostic check on the heap, identifying potential issues.
 void check_heap(void)
 {
-    if (base == NULL)
+    if (base == NULL) // If the heap is empty, print a message and return.
     {
         printf("Heap is empty.\n");
         return;
     }
 
-    t_block current = base;
-    printf(YELLOW "Heap check\n" RESET);
-    while (current != NULL)
+    t_block current = base;              // Start at the base of the heap.
+    printf(YELLOW "Heap check\n" RESET); // Print a formatted header for the check.
+    while (current != NULL)              // Iterate through all blocks in the heap.
     {
+        // Check for adjacent free blocks that are not fused together.
         if (current->free && current->next && current->next->free)
         {
             printf("%sWarning:%s Free blocks at %p and %p are adjacent but not fused.\n", RED, RESET, (void*)current,
                    (void*)current->next);
         }
+        // Check if the block size is invalid.
         if (current->size <= 0)
         {
             printf("%sWarning:%sBlock at %p has invalid size %zu.\n", RED, RESET, (void*)current, current->size);
         }
+        // Print details of the current block.
         printf("Block at %p\n", (void*)current);
         printf("  Size: %zu\n", current->size);
         printf("  Free: %d\n", current->free);
         printf("  Next block: %p\n", (void*)(current->next));
         printf("  Previous block: %p\n", (void*)(current->prev));
         printf("  Data address: %p\n", current->ptr);
-        current = current->next;
+        current = current->next; // Move to the next block.
     }
 }
 
+// Displays a summary of memory usage and the log of operations.
 void memory_usage(void)
 {
-    size_t current_allocated = total_allocated_memory - total_freed_memory;
-    printf(YELLOW "Memory Usage Report:\n" RESET);
+    size_t current_allocated = total_allocated_memory - total_freed_memory; // Calculate currently allocated memory.
+    printf(YELLOW "Memory Usage Report:\n" RESET);                          // Print a formatted header.
     printf("  Total allocated memory (since start): %zu bytes\n", total_allocated_memory);
     printf("  Total freed memory (since start): %zu bytes\n", total_freed_memory);
     printf("  Currently allocated memory: %zu bytes\n", current_allocated);
 
-    // Display the log entries
+    // Print the memory operation log.
     printf(BLUE "\nMemory Operation Log:\n" RESET);
-    t_log_entry* entry = log_head;
+    t_log_entry* entry = log_head; // Start at the head of the log list.
 
-    // Reverse the log list to print in chronological order
+    // Reverse the log list to print in chronological order.
     t_log_entry* reversed_log = NULL;
     while (entry)
     {
@@ -101,9 +110,10 @@ void memory_usage(void)
         entry = next;
     }
 
-    entry = reversed_log;
+    entry = reversed_log; // Traverse the reversed list.
     while (entry)
     {
+        // Print each log entry with appropriate formatting based on operation type.
         switch (entry->type)
         {
         case MALLOC:
@@ -119,6 +129,6 @@ void memory_usage(void)
             printf(GREEN "free [%d]" RESET " of %zu bytes from %p\n", entry->op_id, entry->size, entry->ptr);
             break;
         }
-        entry = entry->next;
+        entry = entry->next; // Move to the next log entry.
     }
 }

@@ -1,25 +1,46 @@
-#include "../include/memory.h"
-#include "../include/mem_logging.h"
+/**
+ * @file free.h
+ * @brief Header file for memory deallocation and validation functions.
+ *
+ * This header provides function prototypes for freeing allocated memory,
+ * validating memory addresses, and merging adjacent free memory blocks.
+ * These functions are part of the custom memory allocator.
+ */
+
+#include "../include/memory.h" ///< Includes definitions for memory management structures and constants.
+#include "../include/mem_logging.h" ///< Provides functionality for logging memory operations.
 
 /**
- * @brief Fusiona un bloque libre con su siguiente bloque si también está libre.
+ * @brief Merges a free memory block with adjacent free blocks.
  *
- * @param b Bloque a fusionar.
- * @return t_block Puntero al bloque fusionado.
+ * This function combines a given free block with its neighboring free blocks,
+ * if available, to form a larger contiguous free block. The resulting block
+ * is updated in the memory heap.
+ *
+ * @param b Pointer to the memory block to merge.
+ * @return t_block Pointer to the merged memory block.
  */
 t_block fusion(t_block b);
 
 /**
- * @brief Verifica si una dirección de memoria es válida.
+ * @brief Checks if a given memory address is valid.
  *
- * @param p Dirección de memoria a verificar.
- * @return int Retorna 1 si la dirección es válida, 0 en caso contrario.
+ * Validates whether the provided pointer corresponds to a valid memory block
+ * in the heap managed by the custom memory allocator.
+ *
+ * @param p Pointer to the memory address to validate.
+ * @return int Returns 1 if the address is valid, 0 otherwise.
  */
 int valid_addr(void* p);
 
 /**
- * @brief Libera un bloque de memoria previamente asignado.
+ * @brief Frees a previously allocated memory block.
  *
- * @param p Puntero al área de datos a liberar.
+ * Marks the specified memory block as free, merges it with adjacent free blocks
+ * if possible, and optionally unmaps it from the heap if it is the last block
+ * and `unmap_flag` is enabled.
+ *
+ * @param ptr Pointer to the memory block to be freed.
+ * @param unmap_flag Flag indicating whether to unmap the memory block if possible.
  */
-void free(void *ptr, int unmap_flag);
+void free(void* ptr, int unmap_flag);
