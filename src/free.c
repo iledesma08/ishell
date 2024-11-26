@@ -6,7 +6,6 @@ extern int enable_unmapping;         // Flag to enable or disable unmapping of m
 extern size_t total_freed_memory;    // Tracks the total memory freed by the allocator.
 unsigned long free_ctr = 0;          // Counter for the number of free operations performed.
 
-/* Merges a block with adjacent free blocks, both forward and backward, if possible. */
 t_block fusion(t_block b)
 {
     // Merge with subsequent free blocks.
@@ -32,7 +31,6 @@ t_block fusion(t_block b)
     return b; // Return the fused block.
 }
 
-/* Verifies if a pointer is valid and belongs to a memory block in the heap. */
 int valid_addr(void* p)
 {
     if (p == NULL || base == NULL) // Check if the pointer or heap base is null.
@@ -54,8 +52,7 @@ int valid_addr(void* p)
     return INVALID_ADDRESS; // Return invalid if the block is not found.
 }
 
-/* Frees a memory block and optionally unmaps it if it is at the end of the heap. */
-void free(void* ptr, int unmap_flag)
+void my_free(void* ptr, int unmap_flag)
 {
     pthread_mutex_lock(&memory_mutex); // Lock the mutex for thread safety.
 

@@ -3,7 +3,6 @@
 extern pthread_mutex_t memory_mutex; // Mutex for thread-safe memory operations.
 unsigned long realloc_ctr = 0;       // Counter to track the number of realloc operations performed.
 
-/* Copies data from a source memory block to a destination memory block. */
 void copy_block(t_block src, t_block dst)
 {
     size_t *sdata, *ddata; // Pointers for source and destination data.
@@ -17,15 +16,14 @@ void copy_block(t_block src, t_block dst)
         ddata[i] = sdata[i];
 }
 
-/* Reallocates memory, resizing the block to the specified size. */
-void* realloc(void* ptr, size_t size)
+void* my_realloc(void* ptr, size_t size)
 {
     pthread_mutex_lock(&memory_mutex); // Lock the mutex for thread-safe operation.
 
     if (ptr == NULL) // If the pointer is NULL, realloc behaves like malloc.
     {
         pthread_mutex_unlock(&memory_mutex); // Unlock the mutex before returning.
-        return malloc(size); // Allocate a new block of the requested size.
+        return my_malloc(size);                 // Allocate a new block of the requested size.
     }
 
     t_block b = get_block(ptr); // Retrieve the block metadata for the pointer.
@@ -34,33 +32,33 @@ void* realloc(void* ptr, size_t size)
     if (!valid_addr(ptr) || b == NULL)
     {
         pthread_mutex_unlock(&memory_mutex); // Unlock the mutex before returning.
-        return NULL; // Return NULL for invalid address or metadata issues.
+        return NULL;                         // Return NULL for invalid address or metadata issues.
     }
 
     if (b->size >= size) // If the current block size is already sufficient.
     {
         pthread_mutex_unlock(&memory_mutex); // Unlock the mutex before returning.
-        return ptr; // Return the original pointer.
+        return ptr;                          // Return the original pointer.
     }
 
     // Allocate a new block with the requested size.
-    void* new_ptr = malloc(size);
+    void* new_ptr = my_malloc(size);
     if (new_ptr) // Check if the allocation was successful.
     {
         char *src = (char*)ptr, *dest = (char*)new_ptr; // Cast pointers for byte-wise copying.
-        
+
         // Copy data from the original block to the new block.
         for (size_t i = 0; i < b->size; i++)
         {
             dest[i] = src[i];
         }
 
-        free(ptr, FALSE); // Free the old block without unmapping it.
+        my_free(ptr, FALSE); // Free the old block without unmapping it.
 
         // Log the realloc operation for debugging and tracking.
         log_mem_operation(REALLOC, new_ptr, size, &realloc_ctr);
     }
 
     pthread_mutex_unlock(&memory_mutex); // Unlock the mutex after completing the operation.
-    return new_ptr; // Return the pointer to the newly allocated memory.
+    return new_ptr;                      // Return the pointer to the newly allocated memory.
 }

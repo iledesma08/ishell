@@ -7,8 +7,8 @@
  * the custom memory allocation system defined in the custom memory allocator.
  */
 
-#include "../include/memory.h" ///< Includes definitions for memory management structures and constants.
 #include "../include/malloc.h" ///< Includes memory allocation functionality for custom allocator.
+#include "../include/memory.h" ///< Includes definitions for memory management structures and constants.
 
 /**
  * @brief Allocates memory for an array of elements and initializes all bytes to zero.
@@ -21,4 +21,4 @@
  * @param size Size of each element in bytes.
  * @return void* Pointer to the allocated and zero-initialized memory, or NULL if the allocation fails.
  */
-void* calloc(size_t number, size_t size);
+void* my_calloc(size_t number, size_t size);

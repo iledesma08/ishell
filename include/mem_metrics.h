@@ -4,14 +4,15 @@
  *
  * This file provides constants and function prototypes for calculating memory
  * fragmentation, measuring allocator efficiency, and managing the state of a custom
- * memory allocator.
+ * memory allocator. It includes functions for analyzing performance and fragmentation
+ * for various memory allocation methods.
  */
 
-#include "../include/memory.h" ///< Includes core memory management structures and definitions.
-#include "../include/malloc.h" ///< Includes functionality for memory allocation.
-#include "../include/calloc.h" ///< Includes functionality for zero-initialized memory allocation.
+#include "../include/calloc.h"  ///< Includes functionality for zero-initialized memory allocation.
+#include "../include/free.h"    ///< Includes functionality for freeing memory blocks.
+#include "../include/malloc.h"  ///< Includes functionality for memory allocation.
+#include "../include/memory.h"  ///< Includes core memory management structures and definitions.
 #include "../include/realloc.h" ///< Includes functionality for memory reallocation.
-#include "../include/free.h" ///< Includes functionality for freeing memory blocks.
 
 /**
  * @def ALLOCATION_SIZE_MAX
@@ -42,3 +43,49 @@
  * Defines the number of nanoseconds in one second, used for time-related calculations.
  */
 #define NANOSECONDS_IN_SECOND 1000000000
+
+/**
+ * @brief Calculates memory fragmentation for each allocation method.
+ *
+ * Analyzes the memory heap to calculate external fragmentation for each supported
+ * allocation method (e.g., First Fit, Best Fit, Worst Fit). Stores the calculated
+ * fragmentation rates in the provided array.
+ *
+ * @param fragmentation_rates Array to store the fragmentation percentage for each method.
+ */
+void calculate_fragmentation_all_methods(double* fragmentation_rates);
+
+/**
+ * @brief Retrieves the current time in seconds.
+ *
+ * Combines seconds and nanoseconds into a single floating-point value to represent
+ * the current time in seconds. Used for measuring performance metrics.
+ *
+ * @return double Current time in seconds.
+ */
+double get_time_in_seconds(void);
+
+/**
+ * @brief Runs an efficiency test for the currently selected allocation method.
+ *
+ * Measures the time taken for a series of memory allocations and deallocations
+ * using the current memory allocation method. Also calculates fragmentation after
+ * the test.
+ */
+void efficiency_test_current_method(void);
+
+/**
+ * @brief Runs efficiency tests for all supported allocation methods.
+ *
+ * Measures the time taken for memory allocations and deallocations, as well as
+ * fragmentation rates, for all available allocation methods (e.g., First Fit, Best Fit, Worst Fit).
+ */
+void efficiency_test_all_methods(void);
+
+/**
+ * @brief Clears all memory blocks and resets the memory allocator.
+ *
+ * Frees all allocated blocks, clears fragmentation data, and resets the memory allocator
+ * state. Ensures that no residual data remains in the heap.
+ */
+void clear_memory(void);

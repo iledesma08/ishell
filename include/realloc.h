@@ -7,15 +7,15 @@
  * of the custom memory allocator and ensure efficient memory management.
  */
 
-#include "../include/memory.h" ///< Includes definitions for memory structures and constants.
-#include "../include/free.h" ///< Includes functionality for freeing memory blocks.
+#include "../include/free.h"   ///< Includes functionality for freeing memory blocks.
 #include "../include/malloc.h" ///< Includes functionality for memory allocation.
+#include "../include/memory.h" ///< Includes definitions for memory structures and constants.
 
 /**
  * @brief Copies the contents of a source memory block to a destination block.
  *
  * Transfers the data from the source block to the destination block, ensuring
- * that no more data is copied than the size of either block. This function is 
+ * that no more data is copied than the size of either block. This function is
  * useful during memory reallocation when the block size changes.
  *
  * @param src Pointer to the source memory block.
@@ -35,4 +35,4 @@ void copy_block(t_block src, t_block dst);
  * @param size New size in bytes for the memory block.
  * @return void* Pointer to the resized memory block, or NULL if reallocation fails.
  */
-void* realloc(void* p, size_t size);
+void* my_realloc(void* p, size_t size);

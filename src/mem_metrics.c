@@ -1,13 +1,13 @@
 #include "../include/mem_metrics.h" // Include the header for memory metrics functionality.
 
 // External variables from memory.c for accessing heap state and memory statistics.
-extern void* base;                   // Pointer to the start of the heap.
+extern void* base;                    // Pointer to the start of the heap.
+extern int method;                    // Memory allocation method.
 extern size_t total_allocated_memory; // Total memory allocated during program execution.
-extern size_t total_freed_memory;    // Total memory freed during program execution.
-extern int enable_unmapping;         // Flag to enable or disable unmapping of memory blocks.
+extern size_t total_freed_memory;     // Total memory freed during program execution.
+extern int enable_unmapping;          // Flag to enable or disable unmapping of memory blocks.
 
-/* Calculates fragmentation for each memory allocation method. */
-void calculate_fragmentation_per_method(double* fragmentation_rates)
+void calculate_fragmentation_all_methods(double* fragmentation_rates)
 {
     if (base == NULL) // If the heap is empty, there's nothing to calculate.
     {
@@ -27,7 +27,7 @@ void calculate_fragmentation_per_method(double* fragmentation_rates)
     while (current_block)
     {
         int m = current_block->alloc_method; // Get the allocation method for the block.
-        if (m < 0 || m >= ALLOC_METHODS) // Skip invalid methods.
+        if (m < 0 || m >= ALLOC_METHODS)     // Skip invalid methods.
         {
             printf("Invalid allocation method in block at %p\n", (void*)current_block);
             current_block = current_block->next;
@@ -77,22 +77,20 @@ void calculate_fragmentation_per_method(double* fragmentation_rates)
     }
 }
 
-/* Returns the current time in seconds, combining seconds and nanoseconds. */
 double get_time_in_seconds(void)
 {
     struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC, &ts); // Get the current time.
+    clock_gettime(CLOCK_MONOTONIC, &ts);                   // Get the current time.
     return ts.tv_sec + ts.tv_nsec / NANOSECONDS_IN_SECOND; // Convert to seconds.
 }
 
-/* Tests the efficiency of the allocator by measuring allocation and deallocation times. */
-void efficiency_test(void)
+void efficiency_test_current_method(void)
 {
     enable_unmapping = FALSE; // Disable unmapping during the test to avoid overhead.
 
     // Allocate arrays for pointers and sizes.
-    void** pointers = malloc(NUM_ALLOCATIONS * sizeof(void*));
-    size_t* sizes = malloc(NUM_ALLOCATIONS * sizeof(size_t));
+    void** pointers = my_malloc(NUM_ALLOCATIONS * sizeof(void*));
+    size_t* sizes = my_malloc(NUM_ALLOCATIONS * sizeof(size_t));
     if (!pointers || !sizes) // Check if memory allocation for test arrays failed.
     {
         fprintf(stderr, "Memory allocation failed for test arrays.\n");
@@ -110,7 +108,7 @@ void efficiency_test(void)
     double start_time = get_time_in_seconds();
     for (int i = 0; i < NUM_ALLOCATIONS; i++)
     {
-        pointers[i] = malloc(sizes[i]);
+        pointers[i] = my_malloc(sizes[i]);
         if (!pointers[i]) // Check if allocation failed for any pointer.
         {
             fprintf(stderr, "Allocation failed at iteration %d\n", i);
@@ -125,33 +123,45 @@ void efficiency_test(void)
     {
         if (pointers[i])
         {
-            free(pointers[i], TRUE); // Free each pointer, allowing unmapping.
+            my_free(pointers[i], TRUE); // Free each pointer, allowing unmapping.
             pointers[i] = NULL;      // Nullify the pointer to prevent double free.
         }
         if (sizes[i]) // Reset size values to avoid reuse.
         {
-            free(sizes[i], TRUE);
+            my_free(sizes[i], TRUE);
             sizes[i] = 0;
         }
     }
     double deallocation_time = get_time_in_seconds() - start_time;
 
     // Print the results of the efficiency test.
-    printf(BLUE "Efficiency Test Results:\n" RESET);
+    const char* method_name = (method == FIRST_FIT)   ? "First Fit"
+                              : (method == BEST_FIT)  ? "Best Fit"
+                              : (method == WORST_FIT) ? "Worst Fit"
+                                                      : "Unknown";
+    printf(BLUE "Efficiency Test Results for %s:\n" RESET, method_name);
     printf("\tAllocation time: %.6f seconds\n", allocation_time);
     printf("\tDeallocation time: %.6f seconds\n", deallocation_time);
-
-    // Calculate and print fragmentation after the test.
-    double fragmentation_rates[ALLOC_METHODS];
-    calculate_fragmentation_per_method(fragmentation_rates);
 
     enable_unmapping = TRUE; // Re-enable unmapping after the test.
 }
 
-/* Clears all blocks and resets the allocator to its initial state. */
-void clear_allocator(void)
+void efficiency_test_all_methods(void)
 {
-    enable_unmapping = 1; // Enable unmapping to release memory.
+    for (int m = FIRST_FIT; m < ALLOC_METHODS; m++)
+    {
+        set_method(m); // Set the current allocation method.
+        efficiency_test_current_method();
+    }
+
+    // Calculate and print fragmentation after the test.
+    double fragmentation_rates[ALLOC_METHODS];
+    calculate_fragmentation_per_method(fragmentation_rates);
+}
+
+void clear_memory(void)
+{
+    enable_unmapping = TRUE; // Enable unmapping to release memory.
 
     if (base == NULL) // If the heap is empty, nothing to clear.
     {
@@ -160,11 +170,11 @@ void clear_allocator(void)
     }
 
     t_block current_block = base; // Start at the base of the heap.
-    while (current_block) // Traverse the heap to unmap all blocks.
+    while (current_block)         // Traverse the heap to unmap all blocks.
     {
         t_block next = current_block->next; // Save the next block pointer.
         size_t total_size = current_block->size + BLOCK_SIZE;
-        if (munmap(current_block, total_size) == -1) // Attempt to unmap the current block.
+        if (munmap(current_block, total_size) == INVALID_ADDRESS) // Attempt to unmap the current block.
         {
             perror("munmap failed");
         }
@@ -181,5 +191,5 @@ void clear_allocator(void)
     total_freed_memory = 0;
 
     clear_logs(); // Clear the memory operation logs.
-    printf("Allocator state cleared and logs cleared.\n");
+    printf("Cleared Heap and Logs\n");
 }

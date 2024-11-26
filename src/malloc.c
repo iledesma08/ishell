@@ -8,7 +8,6 @@ extern size_t total_allocated_memory; // Tracks the total memory allocated by th
 
 unsigned long malloc_ctr = 0; // Counter for the number of malloc operations performed.
 
-/* Finds a suitable memory block based on the selected allocation method. */
 t_block find_block(t_block* last, size_t size)
 {
     t_block b = base; // Start searching from the base of the heap.
@@ -78,7 +77,6 @@ t_block find_block(t_block* last, size_t size)
     }
 }
 
-/* Splits a memory block into two if it is larger than the requested size. */
 void split_block(t_block b, size_t s)
 {
     if (b->size > s + BLOCK_SIZE) // Ensure there is enough space to split.
@@ -99,7 +97,6 @@ void split_block(t_block b, size_t s)
     }
 }
 
-/* Extends the heap by creating a new memory block. */
 t_block extend_heap(t_block last, size_t s)
 {
     t_block b = mmap(0, s + BLOCK_SIZE, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0); // Allocate memory.
@@ -112,7 +109,7 @@ t_block extend_heap(t_block last, size_t s)
     b->next = NULL;           // New block is at the end, so no next block.
     b->prev = last;           // Link the new block to the previous block.
     b->ptr = b->data;         // Initialize the data pointer.
-    b->free = 0;              // Mark the block as allocated.
+    b->free = FALSE;          // Mark the block as allocated.
     b->alloc_method = method; // Record the allocation method.
 
     if (last)
@@ -121,8 +118,7 @@ t_block extend_heap(t_block last, size_t s)
     return b; // Return the new block.
 }
 
-/* Allocates a block of memory of the requested size. */
-void* malloc(size_t size)
+void* my_malloc(size_t size)
 {
     pthread_mutex_lock(&memory_mutex); // Lock the mutex for thread safety.
 
@@ -144,7 +140,7 @@ void* malloc(size_t size)
             {
                 split_block(b, s); // Split the block if necessary.
             }
-            b->free = 0; // Mark the block as allocated.
+            b->free = FALSE; // Mark the block as allocated.
         }
         else
         {

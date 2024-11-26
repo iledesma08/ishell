@@ -2,34 +2,35 @@
  * @file memory.h
  * @brief Custom memory management library.
  *
- * This header defines the structures, constants, and function prototypes
- * needed for a custom memory allocator. It provides tools for dynamic
- * memory allocation, freeing, and diagnostic checks of the heap.
+ * This header file defines the structures, constants, and function prototypes
+ * required for implementing a custom memory allocator. It provides tools for
+ * dynamic memory allocation, freeing, and diagnostic checks of the heap to ensure
+ * efficient memory usage.
  */
 
-#pragma once // Prevents the header file from being included multiple times in the same compilation unit.
+#pragma once // Prevents multiple inclusions of this header file during compilation.
 
 /* Required headers for memory management */
-#include "mem_logging.h" ///< For logging memory operations.
-#include <linux/time.h>  ///< Provides time-related utilities.
-#include <pthread.h>     ///< Enables thread safety with mutexes.
-#include <stddef.h>      ///< Standard definitions like `size_t`.
-#include <stdint.h>      ///< Fixed-width integer types.
-#include <stdio.h>       ///< Input/output utilities.
-#include <string.h>      ///< Memory manipulation functions like `memset`.
-#include <sys/mman.h>    ///< Memory management functions, such as `mmap`.
-#include <sys/types.h>   ///< Basic data types.
-#include <unistd.h>      ///< Access to POSIX API functions.
+#include "mem_logging.h" ///< Provides functionality for logging memory operations.
+#include <linux/time.h>  ///< Includes time-related utilities.
+#include <pthread.h>     ///< Enables thread safety with mutex support.
+#include <stddef.h>      ///< Defines standard types like `size_t`.
+#include <stdint.h>      ///< Provides fixed-width integer types.
+#include <stdio.h>       ///< Includes I/O utilities for debugging.
+#include <string.h>      ///< Includes memory manipulation utilities like `memset`.
+#include <sys/mman.h>    ///< Provides memory mapping functions for dynamic memory allocation.
+#include <sys/types.h>   ///< Defines basic data types.
+#include <unistd.h>      ///< Provides POSIX API functions for memory management.
 
 /**
  * @def INVALID_ADDRESS
- * Constant used to indicate that a memory address is invalid.
+ * Indicates that a memory address is invalid or inaccessible.
  */
 #define INVALID_ADDRESS -1
 
 /**
  * @def BLOCK_THRESHOLD
- * Defines the minimum padding needed for block alignment.
+ * Minimum padding required for block alignment.
  */
 #define BLOCK_THRESHOLD 8
 
@@ -37,11 +38,11 @@
  * @def align
  * Aligns a size value to the next multiple of 8 bytes.
  *
- * This macro ensures memory allocations conform to system alignment requirements,
- * improving access performance and avoiding potential errors on certain architectures.
+ * Ensures memory allocations conform to alignment requirements, which
+ * can improve performance and prevent hardware errors.
  *
  * @param x The size to align.
- * @return The aligned size value.
+ * @return The aligned size.
  */
 #define align(x) (((((x) - 1) >> 3) << 3) + BLOCK_THRESHOLD)
 
@@ -53,31 +54,31 @@
 
 /**
  * @def PAGESIZE
- * The size of a memory page, typically used for mmap allocations.
+ * Defines the size of a memory page, typically used in mmap allocations.
  */
 #define PAGESIZE 4096
 
 /**
  * @def FIRST_FIT
- * Allocation strategy: assign the first free block large enough for the requested size.
+ * Memory allocation strategy: finds the first free block that fits the request.
  */
 #define FIRST_FIT 0
 
 /**
  * @def BEST_FIT
- * Allocation strategy: assign the smallest free block that fits the requested size.
+ * Memory allocation strategy: finds the smallest block that fits the request.
  */
 #define BEST_FIT 1
 
 /**
  * @def WORST_FIT
- * Allocation strategy: assign the largest free block available.
+ * Memory allocation strategy: finds the largest available block.
  */
 #define WORST_FIT 2
 
 /**
  * @def ALLOC_METHODS
- * The total number of supported allocation strategies.
+ * Total number of memory allocation strategies supported.
  */
 #define ALLOC_METHODS 3
 
@@ -89,13 +90,13 @@
 
 /**
  * @def TRUE
- * Boolean true value.
+ * Boolean true value, used for readability in memory block operations.
  */
 #define TRUE 1
 
 /**
  * @def FALSE
- * Boolean false value.
+ * Boolean false value, used for readability in memory block operations.
  */
 #define FALSE 0
 
@@ -131,45 +132,76 @@
 
 /**
  * @typedef t_block
- * Alias for a pointer to the `s_block` structure.
+ * Alias for a pointer to the `s_block` structure, representing a memory block.
  */
 typedef struct s_block* t_block;
 
 /**
  * @struct s_block
- * @brief Represents a block of memory in the custom allocator.
+ * @brief Represents a block of memory managed by the allocator.
  *
- * Each block contains metadata and a pointer to its data area. The linked
- * structure enables the allocator to manage dynamic memory efficiently.
+ * This structure contains metadata about a memory block, including its size,
+ * pointers to adjacent blocks, and allocation status. It is part of a linked
+ * list that enables the allocator to manage the heap efficiently.
  */
 struct s_block
 {
-    size_t size;           /**< The size of the data area in bytes. */
-    struct s_block* next;  /**< Pointer to the next block in the linked list. */
-    struct s_block* prev;  /**< Pointer to the previous block in the linked list. */
+    size_t size;           /**< Size of the memory block's data area. */
+    struct s_block* next;  /**< Pointer to the next block in the heap. */
+    struct s_block* prev;  /**< Pointer to the previous block in the heap. */
     int free;              /**< Status flag: 1 if the block is free, 0 if allocated. */
-    void* ptr;             /**< Pointer to the start of the data area. */
-    int alloc_method;      /**< The allocation strategy used for this block. */
-    char data[DATA_START]; /**< Start of the data section. Actual size is dynamic. */
+    void* ptr;             /**< Pointer to the start of the data section. */
+    int alloc_method;      /**< Allocation strategy used for this block. */
+    char data[DATA_START]; /**< Start of the block's data section. */
 };
+
+/**
+ * @brief Initializes the memory manager.
+ *
+ * Sets up the necessary data structures and locks for managing memory allocations.
+ */
+void memory_manager_init(void);
+
+/**
+ * @brief Cleans up resources used by the memory manager.
+ *
+ * Releases any locks or resources held by the memory manager, preparing it for shutdown.
+ */
+void memory_manager_cleanup(void);
 
 /**
  * @brief Retrieves the metadata block for a given data pointer.
  *
- * This function calculates the starting address of the block structure
- * that precedes the given data pointer. It is critical for managing
- * allocated blocks and ensuring proper alignment.
+ * Computes the starting address of the metadata structure that corresponds to
+ * the given data pointer, enabling access to block metadata for allocation or deallocation.
  *
- * @param p A pointer to a data segment allocated by the custom allocator.
- * @return t_block A pointer to the corresponding metadata block.
+ * @param p Pointer to a data block allocated by the custom allocator.
+ * @return t_block Pointer to the metadata block associated with the data pointer.
  */
 t_block get_block(void* p);
 
 /**
- * @brief Analyzes the state of the heap and logs potential issues.
+ * @brief Sets the allocation method for the memory manager.
  *
- * This function scans all memory blocks in the heap, checking for
- * abnormalities like adjacent free blocks that could be merged or
- * blocks with invalid sizes. It provides detailed output for debugging.
+ * Configures the allocation strategy used by the memory manager. Supported
+ * strategies include First Fit, Best Fit, and Worst Fit.
+ *
+ * @param m Allocation method to set (FIRST_FIT, BEST_FIT, or WORST_FIT).
+ */
+void set_method(int m);
+
+/**
+ * @brief Performs a diagnostic check of the heap.
+ *
+ * Scans the heap for issues such as adjacent free blocks that can be merged or
+ * invalid block sizes. Outputs diagnostic information for debugging purposes.
  */
 void check_heap(void);
+
+/**
+ * @brief Displays memory usage statistics.
+ *
+ * Prints details about the total allocated and freed memory, as well as the
+ * current state of the heap.
+ */
+void memory_usage(void);

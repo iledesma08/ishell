@@ -57,4 +57,4 @@ t_block extend_heap(t_block last, size_t s);
  * @param size Requested size in bytes for the memory block.
  * @return void* Pointer to the allocated memory block, or NULL if allocation fails.
  */
-void* malloc(size_t size);
+void* my_malloc(size_t size);

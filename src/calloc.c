@@ -3,8 +3,7 @@
 extern pthread_mutex_t memory_mutex; // Mutex for thread-safe memory operations.
 unsigned long calloc_ctr = 0;        // Counter to track the number of calloc operations performed.
 
-/* Allocates memory for an array of elements, initializing all elements to zero. */
-void* calloc(size_t number, size_t size)
+void* my_calloc(size_t number, size_t size)
 {
     pthread_mutex_lock(&memory_mutex); // Lock the mutex to ensure thread safety.
 
@@ -17,7 +16,7 @@ void* calloc(size_t number, size_t size)
     }
 
     // Allocate the memory using malloc, leveraging the existing allocation logic.
-    void* ptr = malloc(total_size);
+    void* ptr = my_malloc(total_size);
     if (ptr == NULL) // Check if the allocation was successful.
     {
         pthread_mutex_unlock(&memory_mutex); // Unlock the mutex before returning.

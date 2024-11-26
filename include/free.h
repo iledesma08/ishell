@@ -43,4 +43,4 @@ int valid_addr(void* p);
  * @param ptr Pointer to the memory block to be freed.
  * @param unmap_flag Flag indicating whether to unmap the memory block if possible.
  */
-void free(void* ptr, int unmap_flag);
+void my_free(void* ptr, int unmap_flag);

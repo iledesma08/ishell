@@ -12,7 +12,6 @@ pthread_mutex_t memory_mutex = PTHREAD_MUTEX_INITIALIZER; // Mutex for synchroni
 size_t total_allocated_memory = 0; // Tracks the total allocated memory.
 size_t total_freed_memory = 0;     // Tracks the total freed memory.
 
-// Initializes the memory manager, setting up a recursive mutex for thread safety.
 void memory_manager_init()
 {
     pthread_mutexattr_t attr;
@@ -22,13 +21,11 @@ void memory_manager_init()
     pthread_mutexattr_destroy(&attr); // Destroy the mutex attributes as they are no longer needed.
 }
 
-// Cleans up the memory manager by destroying the mutex.
 void memory_manager_cleanup()
 {
     pthread_mutex_destroy(&memory_mutex); // Destroy the mutex to release resources.
 }
 
-// Retrieves the memory block metadata associated with a given pointer.
 t_block get_block(void* p)
 {
     if (p == NULL) // If the pointer is null, return NULL.
@@ -39,7 +36,6 @@ t_block get_block(void* p)
     return (t_block)((char*)p - offsetof(struct s_block, data));
 }
 
-// Sets the memory allocation method (First Fit, Best Fit, or Worst Fit).
 void set_method(int m)
 {
     if (m == FIRST_FIT || m == BEST_FIT || m == WORST_FIT) // Check if the method is valid.
@@ -52,7 +48,6 @@ void set_method(int m)
     }
 }
 
-// Performs a diagnostic check on the heap, identifying potential issues.
 void check_heap(void)
 {
     if (base == NULL) // If the heap is empty, print a message and return.
@@ -87,7 +82,6 @@ void check_heap(void)
     }
 }
 
-// Displays a summary of memory usage and the log of operations.
 void memory_usage(void)
 {
     size_t current_allocated = total_allocated_memory - total_freed_memory; // Calculate currently allocated memory.
@@ -114,7 +108,7 @@ void memory_usage(void)
     while (entry)
     {
         // Print each log entry with appropriate formatting based on operation type.
-        switch (entry->type)
+        switch (entry->op)
         {
         case MALLOC:
             printf(RED "malloc [%d]" RESET " of %zu bytes at %p\n", entry->op_id, entry->size, entry->ptr);
