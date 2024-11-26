@@ -1,59 +1,100 @@
 #include "../include/free.h"
 
 extern void* base; // Base of the heap
+extern pthread_mutex_t memory_mutex; // Mutex to synchronize memory operations
+extern int enable_unmapping;
+extern size_t total_freed_memory;
+unsigned long free_ctr = 0;
 
-// Function to merge adjacent free memory blocks
 t_block fusion(t_block b)
 {
-    // If next block exists and is free, merge it with the current block
-    if (b->next && b->next->free)
+    // Fuse with next blocks
+    while (b->next && b->next->free)
     {
-        b->size += BLOCK_SIZE + b->next->size; // Combine sizes of current and next block
-        b->next = b->next->next;               // Update next pointer to skip merged block
-
-        // Update the previous link of the next block
+        t_block next_block = b->next;
+        b->size += BLOCK_SIZE + next_block->size;
+        b->next = next_block->next;
         if (b->next)
-        {
             b->next->prev = b;
-        }
     }
-    return b; // Return the merged block
+
+    // Fuse with previous blocks
+    while (b->prev && b->prev->free)
+    {
+        t_block prev_block = b->prev;
+        prev_block->size += BLOCK_SIZE + b->size;
+        prev_block->next = b->next;
+        if (b->next)
+            b->next->prev = prev_block;
+        b = prev_block;
+    }
+    return b;
 }
 
 // Function to check if a pointer is valid and part of the heap
 int valid_addr(void* p)
 {
-    if (base)
+    if (p == NULL || base == NULL)
     {
-        // Ensure the pointer is within the heap bounds
-        if (p > base && p < sbrk(0))
-        {
-            t_block b = get_block(p); // Retrieve block from pointer
-            // Check if the pointer matches the start of the data segment
-            return b && (p == b->ptr);
-        }
+        return 0;
     }
-    return 0; // Invalid address
+    t_block b = get_block(p);
+    t_block current = base;
+    while (current)
+    {
+        if (current == b)
+        {
+            return (current->ptr == p);
+        }
+        current = current->next;
+    }
+    return INVALID_ADDRESS;
 }
 
-// Function to free allocated memory
-void free(void* ptr)
-{
-    // Check if the pointer is valid before proceeding
-    if (valid_addr(ptr))
-    {
-        t_block b = get_block(ptr); // Retrieve the block from the pointer
-        b->free = 1;                // Mark the block as free
+void free(void *ptr, int unmap_flag) {
+  pthread_mutex_lock(&memory_mutex);
+  if (ptr == NULL) {
+    pthread_mutex_unlock(&memory_mutex);
+    return;
+  }
 
-        // Merge with the next block if it is also free
-        if (b->next && b->next->free)
-        {
-            fusion(b);
+  t_block b;
+
+  if (valid_addr(ptr)) {
+    b = get_block(ptr);
+    b->free = TRUE;
+
+    // Fuse with adjacent free blocks
+    b = fusion(b);
+    total_freed_memory += b->size;
+    add_log_entry(FREE, ptr, b->size);
+
+    if (unmap_flag && b->next == NULL) {
+      if (b->prev) {
+        b->prev->next = NULL;
+      } else {
+        base = NULL; // This was the base block, and there are no other blocks
+      }
+
+      // Check if we should unmap this block
+      if (enable_unmapping && b->free) {
+        size_t total_size = b->size + BLOCK_SIZE;
+        printf("Unmapping block at %p, size: %zu\n", (void *)b, total_size);
+
+        // Unmap only when you are sure it is not used elsewhere
+        if (munmap(b, total_size) == -1) {
+          perror("munmap");
+        } else {
+          // Reset base if it was pointing to this unmapped block
+          if (base == b) {
+            base = NULL;
+          }
         }
-        // Merge with the previous block if it is also free
-        if (b->prev && b->prev->free)
-        {
-            fusion(b->prev);
-        }
+      }
     }
+
+  } else {
+    printf("Attempt to free invalid pointer: %p\n", ptr);
+  }
+  pthread_mutex_unlock(&memory_mutex);
 }

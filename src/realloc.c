@@ -1,68 +1,56 @@
 #include "../include/realloc.h"
+#include "../include/free.h"
+#include "../include/malloc.h"
+
+extern pthread_mutex_t memory_mutex; // Mutex to synchronize memory operations
+unsigned long realloc_ctr = 0;
 
 // Function to copy data from one block to another
 void copy_block(t_block src, t_block dst)
 {
-    char* sdata = src->ptr;                                           // Pointer to source data
-    char* ddata = dst->ptr;                                           // Pointer to destination data
-    size_t copy_size = src->size < dst->size ? src->size : dst->size; // Determine the smaller size to copy
-
-    // Use memcpy to copy data for better efficiency
-    memcpy(ddata, sdata, copy_size);
+    size_t *sdata, *ddata;
+    size_t i;
+    sdata = src->ptr;
+    ddata = dst->ptr;
+    for (i = 0; i * sizeof(size_t) < src->size && i * sizeof(size_t) < dst->size; i++)
+        ddata[i] = sdata[i];
 }
 
 // Function to reallocate memory
 void* realloc(void* ptr, size_t size)
 {
-    if (size == 0)
-    { // If new size is 0, free the memory and return NULL
-        free(ptr);
-        return NULL;
-    }
+    pthread_mutex_lock(&memory_mutex);
 
-    if (!ptr)
-    { // If pointer is NULL, behave like malloc
+    if (ptr == NULL)
+    {
+        pthread_mutex_unlock(&memory_mutex);
         return malloc(size);
     }
 
-    if (valid_addr(ptr))
-    {                               // If the pointer is valid
-        size_t s = align(size);     // Align the requested size
-        t_block b = get_block(ptr); // Get the block from the pointer
-
-        if (b->size >= s)
-        { // If the current block is large enough
-            if (b->size - s >= (BLOCK_SIZE + 4))
-            {
-                split_block(b, s); // Split the block if there's enough extra space
-            }
-            return ptr; // Return the original pointer
-        }
-        else
-        { // If the current block is not large enough
-            // Attempt to merge with the next block if possible
-            if (b->next && b->next->free && (b->size + BLOCK_SIZE + b->next->size) >= s)
-            {
-                fusion(b); // Merge with the next block
-                if (b->size - s >= (BLOCK_SIZE + 4))
-                {
-                    split_block(b, s); // Split if there's extra space
-                }
-                return ptr; // Return the original pointer
-            }
-            else
-            { // Allocate a new block and copy data
-                void* newp = malloc(s);
-                if (!newp)
-                {
-                    return NULL; // Return NULL if allocation fails
-                }
-                t_block new_block = get_block(newp); // Get the block for the new pointer
-                copy_block(b, new_block);            // Copy data to the new block
-                free(ptr);                           // Free the old block
-                return newp;                         // Return the new pointer
-            }
-        }
+    t_block b = get_block(ptr);
+    if (!valid_addr(ptr) || b == NULL)
+    {
+        pthread_mutex_unlock(&memory_mutex);
+        return NULL; // Invalid address, return NULL to prevent undefined behavior
     }
-    return NULL; // Return NULL if the pointer is invalid
+
+    if (b->size >= size)
+    {
+        pthread_mutex_unlock(&memory_mutex);
+        return ptr;
+    }
+
+    void* new_ptr = malloc(size);
+    if (new_ptr)
+    {
+        char *src = (char*)ptr, *dest = (char*)new_ptr;
+        for (size_t i = 0; i < b->size; i++)
+        {
+            dest[i] = src[i];
+        }
+        free(ptr, FALSE); // Do not unmap during reallocation
+    }
+
+    pthread_mutex_unlock(&memory_mutex);
+    return new_ptr;
 }

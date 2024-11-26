@@ -21,4 +21,4 @@ int valid_addr(void* p);
  *
  * @param p Puntero al área de datos a liberar.
  */
-void free(void* p);
+void free(void *ptr, int unmap_flag);
