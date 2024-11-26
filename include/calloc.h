@@ -7,6 +7,8 @@
  * the custom memory allocation system defined in the custom memory allocator.
  */
 
+#pragma once // Prevents multiple inclusions of this header file during compilation.
+
 #include "../include/malloc.h" ///< Includes memory allocation functionality for custom allocator.
 #include "../include/memory.h" ///< Includes definitions for memory management structures and constants.
 

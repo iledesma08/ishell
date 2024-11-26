@@ -68,12 +68,12 @@ void calculate_fragmentation_all_methods(double* fragmentation_rates)
                                   : (m == WORST_FIT) ? "Worst Fit"
                                                      : "Unknown";
 
-        printf("Fragmentation Report for %s:\n", method_name);
-        printf("  Total memory: %zu bytes\n", total_memory);
-        printf("  Total allocated memory: %zu bytes\n", total_allocated[m]);
-        printf("  Total free memory: %zu bytes\n", total_free[m]);
-        printf("  Largest free block: %zu bytes\n", largest_free_block[m]);
-        printf("  External fragmentation: %.2f%%\n", external_fragmentation);
+        printf("%sFragmentation Report for %s%s:\n", YELLOW, method_name, RESET);
+        printf("\tTotal memory: %zu bytes\n", total_memory);
+        printf("\tTotal allocated memory: %zu bytes\n", total_allocated[m]);
+        printf("\tTotal free memory: %zu bytes\n", total_free[m]);
+        printf("\tLargest free block: %zu bytes\n", largest_free_block[m]);
+        printf("\tExternal fragmentation: %.2f%%\n", external_fragmentation);
     }
 }
 
@@ -121,15 +121,10 @@ void efficiency_test_current_method(void)
     start_time = get_time_in_seconds();
     for (int i = 0; i < NUM_ALLOCATIONS; i++)
     {
-        if (pointers[i])
+        if (pointers[i]) // Check if the pointer is valid.
         {
             my_free(pointers[i], TRUE); // Free each pointer, allowing unmapping.
-            pointers[i] = NULL;      // Nullify the pointer to prevent double free.
-        }
-        if (sizes[i]) // Reset size values to avoid reuse.
-        {
-            my_free(sizes[i], TRUE);
-            sizes[i] = 0;
+            pointers[i] = NULL;         // Nullify the pointer to prevent double free.
         }
     }
     double deallocation_time = get_time_in_seconds() - start_time;
@@ -156,7 +151,7 @@ void efficiency_test_all_methods(void)
 
     // Calculate and print fragmentation after the test.
     double fragmentation_rates[ALLOC_METHODS];
-    calculate_fragmentation_per_method(fragmentation_rates);
+    calculate_fragmentation_all_methods(fragmentation_rates);
 }
 
 void clear_memory(void)

@@ -124,7 +124,7 @@ void* my_malloc(size_t size)
 
     t_block b, last;            // Variables for the current and last blocks.
     size_t s;                   // Aligned size of the requested memory.
-    struct timespec start, end; // Variables for timing the operation.
+    struct timespec start; // Variables for timing the operation.
 
     clock_gettime(CLOCK_MONOTONIC, &start); // Start timing.
 

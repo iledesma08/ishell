@@ -12,7 +12,6 @@
 
 /* Required headers for memory management */
 #include "mem_logging.h" ///< Provides functionality for logging memory operations.
-#include <linux/time.h>  ///< Includes time-related utilities.
 #include <pthread.h>     ///< Enables thread safety with mutex support.
 #include <stddef.h>      ///< Defines standard types like `size_t`.
 #include <stdint.h>      ///< Provides fixed-width integer types.

@@ -8,11 +8,14 @@
  * for various memory allocation methods.
  */
 
+#pragma once // Prevents multiple inclusions of this header file during compilation.
+
 #include "../include/calloc.h"  ///< Includes functionality for zero-initialized memory allocation.
 #include "../include/free.h"    ///< Includes functionality for freeing memory blocks.
 #include "../include/malloc.h"  ///< Includes functionality for memory allocation.
 #include "../include/memory.h"  ///< Includes core memory management structures and definitions.
 #include "../include/realloc.h" ///< Includes functionality for memory reallocation.
+#include <stdlib.h>             ///< Provides standard library functions like `exit`.
 
 /**
  * @def ALLOCATION_SIZE_MAX
@@ -24,13 +27,13 @@
  * @def ALLOCATION_SIZE_MIN
  * Minimum size for a single memory allocation in performance tests.
  */
-#define ALLOCATION_SIZE_MIN 1
+#define ALLOCATION_SIZE_MIN 8
 
 /**
  * @def NUM_ALLOCATIONS
  * Number of memory allocations to perform during the efficiency test.
  */
-#define NUM_ALLOCATIONS 1000
+#define NUM_ALLOCATIONS 10000
 
 /**
  * @def TO_PERCENTAGE_MULTIPLIER

@@ -7,7 +7,9 @@
  * It tracks memory usage and logs operations such as malloc, calloc, realloc, and free.
  */
 
-#include <linux/time.h> ///< Provides utilities for time-stamping operations.
+#pragma once // Prevents multiple inclusions of this header file during compilation.
+
+#include <time.h> ///< Provides utilities for time-stamping operations.
 #include <stdint.h>     ///< Provides fixed-width integer types for consistency.
 #include <stdio.h>      ///< Includes standard I/O functions for logging operations.
 #include <string.h>     ///< Provides memory manipulation functions like memset.

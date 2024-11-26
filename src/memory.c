@@ -111,16 +111,16 @@ void memory_usage(void)
         switch (entry->op)
         {
         case MALLOC:
-            printf(RED "malloc [%d]" RESET " of %zu bytes at %p\n", entry->op_id, entry->size, entry->ptr);
+            printf("%smalloc [%lu]%s of %zu bytes at %p\n", RED, entry->op_id, RESET, entry->size, entry->ptr);
             break;
         case CALLOC:
-            printf(RED "calloc [%d]" RESET " of %zu bytes at %p\n", entry->op_id, entry->size, entry->ptr);
+            printf("%scalloc [%lu]%s of %zu bytes at %p\n", RED, entry->op_id, RESET, entry->size, entry->ptr);
             break;
         case REALLOC:
-            printf(RED "realloc [%d]" RESET " to %zu bytes at %p\n", entry->op_id, entry->size, entry->ptr);
+            printf("%srealloc [%lu]%s to %zu bytes at %p\n", RED, entry->op_id, RESET, entry->size, entry->ptr);
             break;
         case FREE:
-            printf(GREEN "free [%d]" RESET " of %zu bytes from %p\n", entry->op_id, entry->size, entry->ptr);
+            printf("%sfree [%lu]%s of %zu bytes from %p\n", BLUE, entry->op_id, RESET, entry->size, entry->ptr);
             break;
         }
         entry = entry->next; // Move to the next log entry.

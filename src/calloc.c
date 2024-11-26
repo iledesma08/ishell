@@ -1,4 +1,4 @@
-#include "../include/calloc.h" // Include the header file for calloc functionality.
+#include "../include/calloc.h"
 
 extern pthread_mutex_t memory_mutex; // Mutex for thread-safe memory operations.
 unsigned long calloc_ctr = 0;        // Counter to track the number of calloc operations performed.
