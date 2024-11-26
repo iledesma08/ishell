@@ -1,4 +1,6 @@
 #include "../include/memory.h"
+#include "../include/free.h"
+#include "../include/malloc.h"
 
 /**
  * @brief Copia el contenido de un bloque de origen a un bloque de destino.

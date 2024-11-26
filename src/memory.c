@@ -2,24 +2,11 @@
 
 extern t_log_entry* log_head; // Head of the log list
 
-void* base = NULL;      // Pointer to the beginning of the heap
-int method = FIRST_FIT; // Memory allocation method (0 = First Fit, 1 = Best Fit)
+void* base = NULL;            // Pointer to the beginning of the heap
+int method = FIRST_FIT;       // Memory allocation method (0 = First Fit, 1 = Best Fit)
 int enable_unmapping = FALSE; // Enable unmapping of freed memory blocks
 typedef struct s_block* t_block;
 pthread_mutex_t memory_mutex = PTHREAD_MUTEX_INITIALIZER; // Mutex for thread safety
-
-// Counters for allocation methods
-unsigned long first_fit_uses = 0;
-unsigned long best_fit_uses = 0;
-unsigned long worst_fit_uses = 0;
-
-// Counters for allocation time and count
-unsigned long first_fit_alloc_ctr = 0;
-unsigned long best_fit_alloc_ctr = 0;
-unsigned long worst_fit_alloc_ctr = 0;
-double first_fit_alloc_timestamp = 0;
-double best_fit_alloc_timestamp = 0;
-double worst_fit_alloc_timestamp = 0;
 
 // Memory amounts to be tracked
 size_t total_allocated_memory = 0;
@@ -75,12 +62,12 @@ void check_heap(void)
     {
         if (current->free && current->next && current->next->free)
         {
-            printf("Warning: Free blocks at %p and %p are adjacent but not fused.\n", (void*)current,
+            printf("%sWarning:%s Free blocks at %p and %p are adjacent but not fused.\n", RED, RESET, (void*)current,
                    (void*)current->next);
         }
         if (current->size <= 0)
         {
-            printf("Warning: Block at %p has invalid size %zu.\n", (void*)current, current->size);
+            printf("%sWarning:%sBlock at %p has invalid size %zu.\n", RED, RESET, (void*)current, current->size);
         }
         printf("Block at %p\n", (void*)current);
         printf("  Size: %zu\n", current->size);
@@ -120,16 +107,16 @@ void memory_usage(void)
         switch (entry->type)
         {
         case MALLOC:
-            printf(RED "malloc" RESET " of %zu bytes at %p\n", entry->size, entry->ptr);
+            printf(RED "malloc [%d]" RESET " of %zu bytes at %p\n", entry->op_id, entry->size, entry->ptr);
             break;
         case CALLOC:
-            printf(RED "calloc" RESET " of %zu bytes at %p\n", entry->size, entry->ptr);
+            printf(RED "calloc [%d]" RESET " of %zu bytes at %p\n", entry->op_id, entry->size, entry->ptr);
             break;
         case REALLOC:
-            printf(RED "realloc" RESET " to %zu bytes at %p\n", entry->size, entry->ptr);
+            printf(RED "realloc [%d]" RESET " to %zu bytes at %p\n", entry->op_id, entry->size, entry->ptr);
             break;
         case FREE:
-            printf(GREEN "free" RESET " of %zu bytes from %p\n", entry->size, entry->ptr);
+            printf(GREEN "free [%d]" RESET " of %zu bytes from %p\n", entry->op_id, entry->size, entry->ptr);
             break;
         }
         entry = entry->next;

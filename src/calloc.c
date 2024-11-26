@@ -1,5 +1,4 @@
 #include "../include/calloc.h"
-#include "../include/malloc.h"
 
 extern pthread_mutex_t memory_mutex; // Mutex to synchronize memory operations
 unsigned long calloc_ctr = 0;
@@ -31,6 +30,9 @@ void* calloc(size_t number, size_t size)
     {
         char_ptr[i] = 0;
     }
+
+    // Log the calloc operation
+    log_mem_operation(CALLOC, ptr, total_size, &calloc_ctr);
 
     pthread_mutex_unlock(&memory_mutex);
     return ptr;

@@ -28,4 +28,4 @@ typedef struct log_entry
     unsigned long op_id;
 } t_log_entry;
 
-void log_mem_operation(alloc_type type, void *ptr, size_t size);
+void log_mem_operation(alloc_type type, void *ptr, size_t size, unsigned long *op_ctr);

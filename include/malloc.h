@@ -1,4 +1,5 @@
 #include "../include/memory.h"
+#include "../include/mem_logging.h"
 
 /**
  * @brief Encuentra un bloque libre que tenga al menos el tamaño solicitado.

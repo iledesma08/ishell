@@ -1,4 +1,5 @@
 #include "../include/memory.h"
+#include "../include/malloc.h"
 
 /**
  * @brief Asigna un bloque de memoria para un número de elementos, inicializándolo a cero.

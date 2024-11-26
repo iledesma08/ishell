@@ -1,19 +1,8 @@
 #include "../include/malloc.h"
 
-extern void* base; // Base of the heap
-extern int method; // Allocation method
+extern void* base;                   // Base of the heap
+extern int method;                   // Allocation method
 extern pthread_mutex_t memory_mutex; // Mutex to synchronize memory operations
-
-extern unsigned long first_fit_uses; // Counter for First Fit uses
-extern unsigned long best_fit_uses; // Counter for Best Fit uses
-extern unsigned long worst_fit_uses; // Counter for Worst Fit uses
-
-extern unsigned long first_fit_alloc_ctr; // Counter for First Fit allocations
-extern unsigned long best_fit_alloc_ctr; // Counter for Best Fit allocations
-extern unsigned long worst_fit_alloc_ctr; // Counter for Worst Fit allocations
-extern double first_fit_alloc_timestamp; // Total time spent in First Fit allocations
-extern double best_fit_alloc_timestamp; // Total time spent in Best Fit allocations
-extern double worst_fit_alloc_timestamp; // Total time spent in Worst Fit allocations
 
 extern size_t total_allocated_memory; // Total allocated memory
 
@@ -31,8 +20,6 @@ t_block find_block(t_block* last, size_t size)
             *last = b;
             b = b->next;
         }
-        if (b)
-            first_fit_uses++;
         return b;
     }
     else if (method == BEST_FIT)
@@ -57,8 +44,6 @@ t_block find_block(t_block* last, size_t size)
             *last = b;
             b = b->next;
         }
-        if (best)
-            best_fit_uses++;
         return best;
     }
     else if (method == WORST_FIT)
@@ -79,8 +64,6 @@ t_block find_block(t_block* last, size_t size)
             *last = b;
             b = b->next;
         }
-        if (worst)
-            worst_fit_uses++;
         return worst;
     }
     else
@@ -91,8 +74,6 @@ t_block find_block(t_block* last, size_t size)
             *last = b;
             b = b->next;
         }
-        if (b)
-            first_fit_uses++;
         return b;
     }
 }
@@ -107,7 +88,7 @@ void split_block(t_block b, size_t s)
         new_block->size = b->size - s - BLOCK_SIZE; // Update size of the new block
         new_block->next = b->next;                  // Link the new block to the next block
         new_block->prev = b;                        // Update the previous link of the new block
-        new_block->free = TRUE;                        // Mark new block as free
+        new_block->free = TRUE;                     // Mark new block as free
         new_block->ptr = new_block->data;           // Set pointer to the data segment of the new block
 
         b->size = s;         // Update the size of the current block
@@ -192,31 +173,7 @@ void* malloc(size_t size)
     b->alloc_method = method;
     total_allocated_memory += b->size;
     void* ptr = b->data;
-    add_log_entry(MALLOC, ptr, size);
-
-    // End timing the allocation process
-    clock_gettime(CLOCK_MONOTONIC, &end);
-    double op_time = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / NANOSECONDS_IN_SECOND;
-
-    // Update allocation time and count for the current method
-    if (method == FIRST_FIT)
-    {
-        first_fit_alloc_timestamp += op_time;
-        first_fit_alloc_ctr++;
-        first_fit_uses++;
-    }
-    else if (method == BEST_FIT)
-    {
-        best_fit_alloc_timestamp += op_time;
-        best_fit_alloc_ctr++;
-        best_fit_uses++;
-    }
-    else if (method == WORST_FIT)
-    {
-        worst_fit_alloc_timestamp += op_time;
-        worst_fit_alloc_ctr++;
-        worst_fit_uses++;
-    }
+    log_mem_operation(MALLOC, ptr, size, &malloc_ctr);
 
     pthread_mutex_unlock(&memory_mutex);
     return ptr;

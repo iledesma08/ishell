@@ -1,6 +1,4 @@
 #include "../include/realloc.h"
-#include "../include/free.h"
-#include "../include/malloc.h"
 
 extern pthread_mutex_t memory_mutex; // Mutex to synchronize memory operations
 unsigned long realloc_ctr = 0;
@@ -49,6 +47,9 @@ void* realloc(void* ptr, size_t size)
             dest[i] = src[i];
         }
         free(ptr, FALSE); // Do not unmap during reallocation
+
+        // Log the realloc operation
+        log_mem_operation(REALLOC, new_ptr, size, &realloc_ctr);
     }
 
     pthread_mutex_unlock(&memory_mutex);

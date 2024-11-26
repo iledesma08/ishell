@@ -1,4 +1,5 @@
 #include "../include/memory.h"
+#include "../include/mem_logging.h"
 
 /**
  * @brief Fusiona un bloque libre con su siguiente bloque si también está libre.

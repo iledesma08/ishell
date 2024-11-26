@@ -9,6 +9,7 @@
 #pragma once
 
 #include "mem_logging.h"
+#include <linux/time.h>
 #include <pthread.h> // Include for mutexes
 #include <stddef.h>
 #include <stdint.h> // Include limits for overflow checks
@@ -18,7 +19,6 @@
 #include <sys/mman.h> // Memory management functions (e.g., mmap)
 #include <sys/types.h>
 #include <unistd.h>
-#include <linux/time.h>
 
 #define INVALID_ADDRESS -1
 #define BLOCK_THRESHOLD 8
@@ -40,6 +40,7 @@
 #define BEST_FIT 1
 /** Politica de asignacion Worst Fit */
 #define WORST_FIT 2
+#define ALLOC_METHODS 3
 /** Tamaño del bloque */
 #define DATA_START 1
 #define TRUE 1
