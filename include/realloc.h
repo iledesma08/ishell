@@ -1,20 +1,38 @@
-#include "../include/memory.h"
-#include "../include/free.h"
-#include "../include/malloc.h"
+/**
+ * @file realloc.h
+ * @brief Header file for memory reallocation functions.
+ *
+ * This header defines the prototypes for functions that handle resizing
+ * memory blocks and copying data between them. These functions are part
+ * of the custom memory allocator and ensure efficient memory management.
+ */
+
+#include "../include/memory.h" ///< Includes definitions for memory structures and constants.
+#include "../include/free.h" ///< Includes functionality for freeing memory blocks.
+#include "../include/malloc.h" ///< Includes functionality for memory allocation.
 
 /**
- * @brief Copia el contenido de un bloque de origen a un bloque de destino.
+ * @brief Copies the contents of a source memory block to a destination block.
  *
- * @param src Bloque de origen.
- * @param dst Bloque de destino.
+ * Transfers the data from the source block to the destination block, ensuring
+ * that no more data is copied than the size of either block. This function is 
+ * useful during memory reallocation when the block size changes.
+ *
+ * @param src Pointer to the source memory block.
+ * @param dst Pointer to the destination memory block.
  */
 void copy_block(t_block src, t_block dst);
 
 /**
- * @brief Cambia el tamaño de un bloque de memoria previamente asignado.
+ * @brief Resizes a previously allocated memory block.
  *
- * @param p Puntero al área de datos a redimensionar.
- * @param size Nuevo tamaño en bytes.
- * @return void* Puntero al área de datos redimensionada.
+ * Changes the size of an allocated memory block, preserving the existing data
+ * up to the smaller of the old and new sizes. If the block needs to be moved,
+ * a new block is allocated, and the old block's data is copied. The old block
+ * is then freed.
+ *
+ * @param p Pointer to the memory block to be resized.
+ * @param size New size in bytes for the memory block.
+ * @return void* Pointer to the resized memory block, or NULL if reallocation fails.
  */
 void* realloc(void* p, size_t size);
