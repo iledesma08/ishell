@@ -49,7 +49,7 @@
  * @def BLOCK_MIN_SIZE
  * The minimum size of a memory block, including metadata.
  */
-#define BLOCK_MIN_SIZE 40
+#define BLOCK_MIN_SIZE 32
 
 /**
  * @def PAGESIZE

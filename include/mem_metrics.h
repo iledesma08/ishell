@@ -42,10 +42,16 @@
 #define TO_PERCENTAGE_MULTIPLIER 100
 
 /**
- * @def NANOSECONDS_IN_SECOND
- * Defines the number of nanoseconds in one second, used for time-related calculations.
+ * @def MILLISECONDS_IN_SECOND
+ * Defines the number of milliseconds in one second, used for time-related calculations.
  */
-#define NANOSECONDS_IN_SECOND 1000000000
+#define MILLISECONDS_IN_SECOND 1000.0
+
+/**
+ * @def NANOSECONDS_IN_MILLISECOND
+ * Defines the number of nanoseconds in one millisecond, used for time-related calculations.
+ */
+#define NANOSECONDS_IN_MILLISECOND 1e6
 
 /**
  * @brief Calculates memory fragmentation for each allocation method.

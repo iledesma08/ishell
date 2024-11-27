@@ -168,7 +168,7 @@ double get_time_in_milliseconds(void)
 {
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);              // Obtén el tiempo actual.
-    return (ts.tv_sec * 1000.0) + (ts.tv_nsec / 1e6); // Convierte a milisegundos.
+    return (ts.tv_sec * MILLISECONDS_IN_SECOND) + (ts.tv_nsec / NANOSECONDS_IN_MILLISECOND); // Convierte a milisegundos.
 }
 
 void clear_memory(void)
