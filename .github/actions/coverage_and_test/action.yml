@@ -9,11 +9,6 @@ runs:
       run: |
         echo "Showing current directory"
         echo $(pwd)
-        echo "Showing content of $HOME"
-        ls $HOME
-        echo "Making Desktop inside HOME to reproduce test"
-        mkdir -p $HOME/Desktop
-        sudo ldconfig
 
         PROJECT_PATH=$(pwd)
 
