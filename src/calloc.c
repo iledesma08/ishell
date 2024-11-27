@@ -15,6 +15,7 @@ void* my_calloc(size_t number, size_t size)
         return NULL;
     }
 
+    pthread_mutex_unlock(&memory_mutex); // Unlock the mutex before my_malloc starts.
     // Allocate the memory using malloc, leveraging the existing allocation logic.
     void* ptr = my_malloc(total_size);
     if (ptr == NULL) // Check if the allocation was successful.

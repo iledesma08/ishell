@@ -25,7 +25,7 @@
  * @def INVALID_ADDRESS
  * Indicates that a memory address is invalid or inaccessible.
  */
-#define INVALID_ADDRESS -1
+#define INVALID_ADDRESS 0
 
 /**
  * @def ALIGNMENT

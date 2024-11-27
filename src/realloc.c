@@ -41,6 +41,7 @@ void* my_realloc(void* ptr, size_t size)
         return ptr;                          // Return the original pointer.
     }
 
+    pthread_mutex_unlock(&memory_mutex); // Unlock the mutex before my_malloc starts.
     // Allocate a new block with the requested size.
     void* new_ptr = my_malloc(size);
     if (new_ptr) // Check if the allocation was successful.

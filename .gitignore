@@ -57,3 +57,10 @@ build/
 
 # Personal files
 used-cmds.md
+
+# Enviroment
+venv/
+.env
+
+# CMake
+CMakeUserPresets.json

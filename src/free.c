@@ -35,7 +35,7 @@ int valid_addr(void* p)
 {
     if (p == NULL || base == NULL) // Check if the pointer or heap base is null.
     {
-        return 0; // Invalid address.
+        return INVALID_ADDRESS; // Invalid address.
     }
     t_block b = get_block(p); // Retrieve the block metadata for the pointer.
     t_block current = base;   // Start checking from the base of the heap.
