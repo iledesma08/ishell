@@ -67,7 +67,6 @@ typedef enum
 } alloc_op;
 
 /**
- * @struct log_entry
  * @brief Represents a log entry for a memory operation.
  *
  * A linked list structure that stores details of a memory operation, including

@@ -43,7 +43,7 @@
  * @param x The size to align.
  * @return The aligned size.
  */
-#define align(x) (((((x) - 1) >> 3) << 3) + ALIGNMENT)
+#define align(x) (((((x)-1) >> 3) << 3) + ALIGNMENT)
 
 /**
  * @def BLOCK_MIN_SIZE
@@ -100,13 +100,12 @@
 #define FALSE 0
 
 /**
- * @typedef t_block
+ * @brief t_block
  * Alias for a pointer to the `s_block` structure, representing a memory block.
  */
 typedef struct s_block* t_block;
 
 /**
- * @struct s_block
  * @brief Represents a block of memory managed by the allocator.
  *
  * This structure contains metadata about a memory block, including its size,

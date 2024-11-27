@@ -3,9 +3,9 @@
 
 #include <unity/unity.h>
 
-#include "../include/malloc.h"
-#include "../include/free.h"
 #include "../include/calloc.h"
+#include "../include/free.h"
+#include "../include/malloc.h"
 #include "../include/realloc.h"
 
 void setUp(void);
