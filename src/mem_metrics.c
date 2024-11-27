@@ -167,8 +167,9 @@ void efficiency_test_all_methods(void)
 double get_time_in_milliseconds(void)
 {
     struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC, &ts);              // Obtén el tiempo actual.
-    return (ts.tv_sec * MILLISECONDS_IN_SECOND) + (ts.tv_nsec / NANOSECONDS_IN_MILLISECOND); // Convierte a milisegundos.
+    clock_gettime(CLOCK_MONOTONIC, &ts); // Obtén el tiempo actual.
+    return (ts.tv_sec * MILLISECONDS_IN_SECOND) +
+           (ts.tv_nsec / NANOSECONDS_IN_MILLISECOND); // Convierte a milisegundos.
 }
 
 void clear_memory(void)
