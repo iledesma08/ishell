@@ -33,7 +33,7 @@
  * @def NUM_ALLOCATIONS
  * Number of memory allocations to perform during the efficiency test.
  */
-#define NUM_ALLOCATIONS 10000
+#define NUM_ALLOCATIONS 1000
 
 /**
  * @def TO_PERCENTAGE_MULTIPLIER
@@ -66,16 +66,7 @@ void calculate_fragmentation_all_methods(double* fragmentation_rates);
  *
  * @return double Current time in seconds.
  */
-double get_time_in_seconds(void);
-
-/**
- * @brief Runs an efficiency test for the currently selected allocation method.
- *
- * Measures the time taken for a series of memory allocations and deallocations
- * using the current memory allocation method. Also calculates fragmentation after
- * the test.
- */
-void efficiency_test_current_method(void);
+double get_time_in_milliseconds(void);
 
 /**
  * @brief Runs efficiency tests for all supported allocation methods.

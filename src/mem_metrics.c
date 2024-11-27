@@ -7,6 +7,9 @@ extern size_t total_allocated_memory; // Total memory allocated during program e
 extern size_t total_freed_memory;     // Total memory freed during program execution.
 extern int enable_unmapping;          // Flag to enable or disable unmapping of memory blocks.
 
+/**
+ * @brief Calculates fragmentation for all allocation methods.
+ */
 void calculate_fragmentation_all_methods(double* fragmentation_rates)
 {
     if (base == NULL) // If the heap is empty, there's nothing to calculate.
@@ -14,7 +17,7 @@ void calculate_fragmentation_all_methods(double* fragmentation_rates)
         printf("No blocks to calculate fragmentation.\n");
         for (int m = 0; m < ALLOC_METHODS; m++) // Set fragmentation rates to 0 for all methods.
         {
-            fragmentation_rates[m] = 0.0;
+            fragmentation_rates[m] = 0.0; // Initialize fragmentation as 0%.
         }
         return;
     }
@@ -27,17 +30,16 @@ void calculate_fragmentation_all_methods(double* fragmentation_rates)
     while (current_block)
     {
         int m = current_block->alloc_method; // Get the allocation method for the block.
-        if (m < 0 || m >= ALLOC_METHODS)     // Skip invalid methods.
+        if (m < 0 || m >= ALLOC_METHODS)     // Skip invalid methods (Free blocks created on purpose for example).
         {
-            printf("Invalid allocation method in block at %p\n", (void*)current_block);
             current_block = current_block->next;
-            continue;
+            continue; // Move to the next block.
         }
 
         if (current_block->free) // If the block is free, update free memory stats.
         {
-            total_free[m] += current_block->size;
-            if (current_block->size > largest_free_block[m])
+            total_free[m] += current_block->size;            // Add the block size to the free memory total.
+            if (current_block->size > largest_free_block[m]) // Update the largest free block.
             {
                 largest_free_block[m] = current_block->size;
             }
@@ -46,7 +48,7 @@ void calculate_fragmentation_all_methods(double* fragmentation_rates)
         {
             total_allocated[m] += current_block->size;
         }
-        current_block = current_block->next;
+        current_block = current_block->next; // Move to the next block.
     }
 
     for (int m = 0; m < ALLOC_METHODS; m++)
@@ -73,85 +75,100 @@ void calculate_fragmentation_all_methods(double* fragmentation_rates)
         printf("\tTotal allocated memory: %zu bytes\n", total_allocated[m]);
         printf("\tTotal free memory: %zu bytes\n", total_free[m]);
         printf("\tLargest free block: %zu bytes\n", largest_free_block[m]);
-        printf("\tExternal fragmentation: %.2f%%\n", external_fragmentation);
+        printf("\tExternal fragmentation: %.2f%%\n\n", external_fragmentation);
     }
-}
-
-double get_time_in_seconds(void)
-{
-    struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC, &ts);                   // Get the current time.
-    return ts.tv_sec + ts.tv_nsec / NANOSECONDS_IN_SECOND; // Convert to seconds.
-}
-
-void efficiency_test_current_method(void)
-{
-    enable_unmapping = FALSE; // Disable unmapping during the test to avoid overhead.
-
-    // Allocate arrays for pointers and sizes.
-    void** pointers = my_malloc(NUM_ALLOCATIONS * sizeof(void*));
-    size_t* sizes = my_malloc(NUM_ALLOCATIONS * sizeof(size_t));
-    if (!pointers || !sizes) // Check if memory allocation for test arrays failed.
-    {
-        fprintf(stderr, "Memory allocation failed for test arrays.\n");
-        exit(1);
-    }
-
-    // Generate random sizes for allocations.
-    srand(time(NULL));
-    for (int i = 0; i < NUM_ALLOCATIONS; i++)
-    {
-        sizes[i] = rand() % ALLOCATION_SIZE_MAX + ALLOCATION_SIZE_MIN;
-    }
-
-    // Measure the time to allocate memory.
-    double start_time = get_time_in_seconds();
-    for (int i = 0; i < NUM_ALLOCATIONS; i++)
-    {
-        pointers[i] = my_malloc(sizes[i]);
-        if (!pointers[i]) // Check if allocation failed for any pointer.
-        {
-            fprintf(stderr, "Allocation failed at iteration %d\n", i);
-            exit(1);
-        }
-    }
-    double allocation_time = get_time_in_seconds() - start_time;
-
-    // Measure the time to deallocate memory.
-    start_time = get_time_in_seconds();
-    for (int i = 0; i < NUM_ALLOCATIONS; i++)
-    {
-        if (pointers[i]) // Check if the pointer is valid.
-        {
-            my_free(pointers[i], TRUE); // Free each pointer, allowing unmapping.
-            pointers[i] = NULL;         // Nullify the pointer to prevent double free.
-        }
-    }
-    double deallocation_time = get_time_in_seconds() - start_time;
-
-    // Print the results of the efficiency test.
-    const char* method_name = (method == FIRST_FIT)   ? "First Fit"
-                              : (method == BEST_FIT)  ? "Best Fit"
-                              : (method == WORST_FIT) ? "Worst Fit"
-                                                      : "Unknown";
-    printf(BLUE "Efficiency Test Results for %s:\n" RESET, method_name);
-    printf("\tAllocation time: %.6f seconds\n", allocation_time);
-    printf("\tDeallocation time: %.6f seconds\n", deallocation_time);
-
-    enable_unmapping = TRUE; // Re-enable unmapping after the test.
 }
 
 void efficiency_test_all_methods(void)
 {
+    double fragmentation_rates[ALLOC_METHODS]; // Array to store fragmentation rates for each method.
+
+    void* pointers[ALLOC_METHODS][NUM_ALLOCATIONS]; // Array to hold allocated blocks for all methods.
+    size_t sizes[ALLOC_METHODS][NUM_ALLOCATIONS];   // Array to hold sizes for all methods.
+
+    double allocation_times[ALLOC_METHODS] = {0};   // Array to store allocation times for each method.
+    double deallocation_times[ALLOC_METHODS] = {0}; // Array to store deallocation times for each method.
+
+    enable_unmapping = FALSE; // Disable unmapping during allocation.
+
+    srand(time(NULL)); // Seed the random number generator.
+
+    // Generate random sizes for all methods.
     for (int m = FIRST_FIT; m < ALLOC_METHODS; m++)
     {
-        set_method(m); // Set the current allocation method.
-        efficiency_test_current_method();
+        for (int i = 0; i < NUM_ALLOCATIONS; i++)
+        {
+            sizes[m][i] = rand() % ALLOCATION_SIZE_MAX + ALLOCATION_SIZE_MIN;
+        }
     }
 
-    // Calculate and print fragmentation after the test.
-    double fragmentation_rates[ALLOC_METHODS];
+    // Interleave allocations for all methods and measure times.
+    for (int m = FIRST_FIT; m < ALLOC_METHODS; m++)
+    {
+        set_method(m); // Set the allocation method.
+
+        double start_time = get_time_in_milliseconds(); // Start timing allocation.
+
+        for (int i = 0; i < NUM_ALLOCATIONS; i++)
+        {
+            pointers[m][i] = my_malloc(sizes[m][i]); // Allocate memory for this method.
+            if (!pointers[m][i])
+            {
+                fprintf(stderr, "Allocation failed for method %d at iteration %d.\n", m, i);
+                exit(1);
+            }
+
+            // Periodically free some blocks to simulate fragmentation.
+            if (i % 5 == 0 && pointers[m][i])
+            {
+                my_free(pointers[m][i], FALSE); // Free every fifth block.
+                pointers[m][i] = NULL;
+            }
+        }
+
+        allocation_times[m] = get_time_in_milliseconds() - start_time; // End timing allocation.
+    }
+
+    // Calculate fragmentation after interleaved allocations and frees.
     calculate_fragmentation_all_methods(fragmentation_rates);
+
+    // Deallocate all remaining memory blocks and measure times.
+    for (int m = FIRST_FIT; m < ALLOC_METHODS; m++)
+    {
+        double start_time = get_time_in_milliseconds(); // Start timing deallocation.
+
+        for (int i = 0; i < NUM_ALLOCATIONS; i++)
+        {
+            if (pointers[m][i])
+            {
+                my_free(pointers[m][i], TRUE); // Free the memory block.
+                pointers[m][i] = NULL;         // Nullify the pointer to prevent double free.
+            }
+        }
+
+        deallocation_times[m] = get_time_in_milliseconds() - start_time; // End timing deallocation.
+    }
+
+    // Print allocation and deallocation times for each method.
+    for (int m = FIRST_FIT; m < ALLOC_METHODS; m++)
+    {
+        const char* method_name = (m == FIRST_FIT)   ? "First Fit"
+                                  : (m == BEST_FIT)  ? "Best Fit"
+                                  : (m == WORST_FIT) ? "Worst Fit"
+                                                     : "Unknown";
+        printf(BLUE "Efficiency Test Results for %s:\n" RESET, method_name);
+        printf("\tAllocation time: %.6f [ms]\n", allocation_times[m]);
+        printf("\tDeallocation time: %.6f [ms]\n\n", deallocation_times[m]);
+    }
+
+    enable_unmapping = TRUE; // Re-enable unmapping after the test.
+}
+
+double get_time_in_milliseconds(void)
+{
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);              // Obtén el tiempo actual.
+    return (ts.tv_sec * 1000.0) + (ts.tv_nsec / 1e6); // Convierte a milisegundos.
 }
 
 void clear_memory(void)
@@ -168,7 +185,7 @@ void clear_memory(void)
     while (current_block)         // Traverse the heap to unmap all blocks.
     {
         t_block next = current_block->next; // Save the next block pointer.
-        size_t total_size = current_block->size + BLOCK_SIZE;
+        size_t total_size = current_block->size + BLOCK_MIN_SIZE;
         if (munmap(current_block, total_size) == INVALID_ADDRESS) // Attempt to unmap the current block.
         {
             perror("munmap failed");

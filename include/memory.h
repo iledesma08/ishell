@@ -28,10 +28,10 @@
 #define INVALID_ADDRESS -1
 
 /**
- * @def BLOCK_THRESHOLD
+ * @def ALIGNMENT
  * Minimum padding required for block alignment.
  */
-#define BLOCK_THRESHOLD 8
+#define ALIGNMENT 8
 
 /**
  * @def align
@@ -43,13 +43,13 @@
  * @param x The size to align.
  * @return The aligned size.
  */
-#define align(x) (((((x) - 1) >> 3) << 3) + BLOCK_THRESHOLD)
+#define align(x) (((((x) - 1) >> 3) << 3) + ALIGNMENT)
 
 /**
- * @def BLOCK_SIZE
+ * @def BLOCK_MIN_SIZE
  * The minimum size of a memory block, including metadata.
  */
-#define BLOCK_SIZE 40
+#define BLOCK_MIN_SIZE 40
 
 /**
  * @def PAGESIZE
@@ -98,36 +98,6 @@
  * Boolean false value, used for readability in memory block operations.
  */
 #define FALSE 0
-
-/**
- * @def RED
- * ANSI escape code for red-colored text in terminal output.
- */
-#define RED "\033[1;31m"
-
-/**
- * @def GREEN
- * ANSI escape code for green-colored text in terminal output.
- */
-#define GREEN "\033[1;32m"
-
-/**
- * @def YELLOW
- * ANSI escape code for yellow-colored text in terminal output.
- */
-#define YELLOW "\033[1;33m"
-
-/**
- * @def BLUE
- * ANSI escape code for blue-colored text in terminal output.
- */
-#define BLUE "\033[1;34m"
-
-/**
- * @def RESET
- * ANSI escape code to reset terminal text formatting.
- */
-#define RESET "\033[0m"
 
 /**
  * @typedef t_block

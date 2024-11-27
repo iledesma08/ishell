@@ -23,7 +23,7 @@ void* my_realloc(void* ptr, size_t size)
     if (ptr == NULL) // If the pointer is NULL, realloc behaves like malloc.
     {
         pthread_mutex_unlock(&memory_mutex); // Unlock the mutex before returning.
-        return my_malloc(size);                 // Allocate a new block of the requested size.
+        return my_malloc(size);              // Allocate a new block of the requested size.
     }
 
     t_block b = get_block(ptr); // Retrieve the block metadata for the pointer.

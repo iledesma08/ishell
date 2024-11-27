@@ -9,11 +9,47 @@
 
 #pragma once // Prevents multiple inclusions of this header file during compilation.
 
-#include <time.h> ///< Provides utilities for time-stamping operations.
-#include <stdint.h>     ///< Provides fixed-width integer types for consistency.
-#include <stdio.h>      ///< Includes standard I/O functions for logging operations.
-#include <string.h>     ///< Provides memory manipulation functions like memset.
-#include <sys/mman.h>   ///< Includes memory mapping functions for dynamic memory management.
+#include <stdint.h>   ///< Provides fixed-width integer types for consistency.
+#include <stdio.h>    ///< Includes standard I/O functions for logging operations.
+#include <string.h>   ///< Provides memory manipulation functions like memset.
+#include <sys/mman.h> ///< Includes memory mapping functions for dynamic memory management.
+#include <time.h>     ///< Provides utilities for time-stamping operations.
+
+/**
+ * @def GRAY
+ * ANSI escape code for gray-colored text in terminal output.
+ */
+#define GRAY "\033[1;30m"
+
+/**
+ * @def RED
+ * ANSI escape code for red-colored text in terminal output.
+ */
+#define RED "\033[1;31m"
+
+/**
+ * @def GREEN
+ * ANSI escape code for green-colored text in terminal output.
+ */
+#define GREEN "\033[1;32m"
+
+/**
+ * @def YELLOW
+ * ANSI escape code for yellow-colored text in terminal output.
+ */
+#define YELLOW "\033[1;33m"
+
+/**
+ * @def BLUE
+ * ANSI escape code for blue-colored text in terminal output.
+ */
+#define BLUE "\033[1;34m"
+
+/**
+ * @def RESET
+ * ANSI escape code to reset terminal text formatting.
+ */
+#define RESET "\033[0m"
 
 /**
  * @enum alloc_op
@@ -69,3 +105,11 @@ void log_mem_operation(alloc_op op, void* ptr, size_t size, unsigned long* op_ct
  * is used to clean up memory and remove all records of logged operations.
  */
 void clear_logs(void);
+
+/**
+ * @brief Displays the memory operation log.
+ *
+ * Prints the memory operation log to the console, showing details of each
+ * memory allocation and deallocation operation in chronological order.
+ */
+void show_logs(void);

@@ -79,14 +79,14 @@ t_block find_block(t_block* last, size_t size)
 
 void split_block(t_block b, size_t s)
 {
-    if (b->size > s + BLOCK_SIZE) // Ensure there is enough space to split.
+    if (b->size > s + BLOCK_MIN_SIZE) // Ensure there is enough space to split.
     {
-        t_block new_block = (t_block)(b->data + s); // Calculate the address of the new block.
-        new_block->size = b->size - s - BLOCK_SIZE; // Adjust the size of the new block.
-        new_block->next = b->next;                  // Link the new block to the next block.
-        new_block->prev = b;                        // Set the previous block of the new block.
-        new_block->free = TRUE;                     // Mark the new block as free.
-        new_block->ptr = new_block->data;           // Initialize the data pointer for the new block.
+        t_block new_block = (t_block)(b->data + s);     // Calculate the address of the new block.
+        new_block->size = b->size - s - BLOCK_MIN_SIZE; // Adjust the size of the new block.
+        new_block->next = b->next;                      // Link the new block to the next block.
+        new_block->prev = b;                            // Set the previous block of the new block.
+        new_block->free = TRUE;                         // Mark the new block as free.
+        new_block->ptr = new_block->data;               // Initialize the data pointer for the new block.
 
         b->size = s;         // Update the size of the current block.
         b->next = new_block; // Link the current block to the new block.
@@ -99,7 +99,8 @@ void split_block(t_block b, size_t s)
 
 t_block extend_heap(t_block last, size_t s)
 {
-    t_block b = mmap(0, s + BLOCK_SIZE, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0); // Allocate memory.
+    t_block b =
+        mmap(0, s + BLOCK_MIN_SIZE, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0); // Allocate memory.
 
     if (b == MAP_FAILED) // Check if memory allocation failed.
     {
@@ -122,8 +123,8 @@ void* my_malloc(size_t size)
 {
     pthread_mutex_lock(&memory_mutex); // Lock the mutex for thread safety.
 
-    t_block b, last;            // Variables for the current and last blocks.
-    size_t s;                   // Aligned size of the requested memory.
+    t_block b, last;       // Variables for the current and last blocks.
+    size_t s;              // Aligned size of the requested memory.
     struct timespec start; // Variables for timing the operation.
 
     clock_gettime(CLOCK_MONOTONIC, &start); // Start timing.
@@ -136,7 +137,7 @@ void* my_malloc(size_t size)
         b = find_block(&last, s); // Try to find a suitable block.
         if (b)
         {
-            if ((b->size - s) >= (BLOCK_SIZE + BLOCK_THRESHOLD)) // Check if the block can be split.
+            if ((b->size - s) >= (BLOCK_MIN_SIZE + ALIGNMENT)) // Check if the block can be split.
             {
                 split_block(b, s); // Split the block if necessary.
             }

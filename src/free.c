@@ -11,9 +11,9 @@ t_block fusion(t_block b)
     // Merge with subsequent free blocks.
     while (b->next && b->next->free)
     {
-        t_block next_block = b->next;             // Get the next block.
-        b->size += BLOCK_SIZE + next_block->size; // Increase the current block size.
-        b->next = next_block->next;               // Update the link to skip the merged block.
+        t_block next_block = b->next;                 // Get the next block.
+        b->size += BLOCK_MIN_SIZE + next_block->size; // Increase the current block size.
+        b->next = next_block->next;                   // Update the link to skip the merged block.
         if (b->next)
             b->next->prev = b; // Update the previous pointer of the next block.
     }
@@ -21,9 +21,9 @@ t_block fusion(t_block b)
     // Merge with previous free blocks.
     while (b->prev && b->prev->free)
     {
-        t_block prev_block = b->prev;             // Get the previous block.
-        prev_block->size += BLOCK_SIZE + b->size; // Increase the previous block size.
-        prev_block->next = b->next;               // Update the link to skip the merged block.
+        t_block prev_block = b->prev;                 // Get the previous block.
+        prev_block->size += BLOCK_MIN_SIZE + b->size; // Increase the previous block size.
+        prev_block->next = b->next;                   // Update the link to skip the merged block.
         if (b->next)
             b->next->prev = prev_block; // Update the previous pointer of the next block.
         b = prev_block;                 // Move to the previous block as the new reference.
@@ -69,14 +69,14 @@ void my_free(void* ptr, int unmap_flag)
         b = get_block(ptr); // Retrieve the block metadata.
         b->free = TRUE;     // Mark the block as free.
 
-        // Merge with adjacent free blocks.
-        b = fusion(b);
+        // Log the free operation.
+        log_mem_operation(FREE, ptr, b->size, &free_ctr);
 
         // Update the total freed memory.
         total_freed_memory += b->size;
 
-        // Log the free operation.
-        log_mem_operation(FREE, ptr, b->size, &free_ctr);
+        // Merge with adjacent free blocks.
+        b = fusion(b);
 
         // If unmap_flag is set and the block is at the end of the heap.
         if (unmap_flag && b->next == NULL)
@@ -93,7 +93,7 @@ void my_free(void* ptr, int unmap_flag)
             // Check if the block should be unmapped.
             if (enable_unmapping && b->free)
             {
-                size_t total_size = b->size + BLOCK_SIZE; // Calculate the total size of the block.
+                size_t total_size = b->size + BLOCK_MIN_SIZE; // Calculate the total size of the block.
                 printf("Unmapping block at %p with size: %zu\n", (void*)b, total_size);
 
                 // Attempt to unmap the block from memory.

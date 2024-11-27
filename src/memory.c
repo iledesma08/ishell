@@ -56,9 +56,8 @@ void check_heap(void)
         return;
     }
 
-    t_block current = base;              // Start at the base of the heap.
-    printf(YELLOW "Heap check\n" RESET); // Print a formatted header for the check.
-    while (current != NULL)              // Iterate through all blocks in the heap.
+    t_block current = base; // Start at the base of the heap.
+    while (current != NULL) // Iterate through all blocks in the heap.
     {
         // Check for adjacent free blocks that are not fused together.
         if (current->free && current->next && current->next->free)
@@ -72,57 +71,22 @@ void check_heap(void)
             printf("%sWarning:%sBlock at %p has invalid size %zu.\n", RED, RESET, (void*)current, current->size);
         }
         // Print details of the current block.
-        printf("Block at %p\n", (void*)current);
-        printf("  Size: %zu\n", current->size);
-        printf("  Free: %d\n", current->free);
-        printf("  Next block: %p\n", (void*)(current->next));
-        printf("  Previous block: %p\n", (void*)(current->prev));
-        printf("  Data address: %p\n", current->ptr);
+        printf("%s--------------------------------%s\n", YELLOW, RESET);
+        printf("%sBlock at %p%s\n", GRAY, (void*)current, RESET);
+        printf("\tSize: %zu\n", current->size);
+        printf("\tFree: %d\n", current->free);
+        printf("\tNext block: %p\n", (void*)(current->next));
+        printf("\tPrevious block: %p\n", (void*)(current->prev));
+        printf("\tData address: %p\n", current->ptr);
         current = current->next; // Move to the next block.
     }
 }
 
 void memory_usage(void)
 {
+    printf(YELLOW "\nMemory Usage:\n" RESET);
+    printf("\tTotal allocated memory (since start): %zu bytes\n", total_allocated_memory);
+    printf("\tTotal freed memory (since start): %zu bytes\n", total_freed_memory);
     size_t current_allocated = total_allocated_memory - total_freed_memory; // Calculate currently allocated memory.
-    printf(YELLOW "Memory Usage Report:\n" RESET);                          // Print a formatted header.
-    printf("  Total allocated memory (since start): %zu bytes\n", total_allocated_memory);
-    printf("  Total freed memory (since start): %zu bytes\n", total_freed_memory);
-    printf("  Currently allocated memory: %zu bytes\n", current_allocated);
-
-    // Print the memory operation log.
-    printf(BLUE "\nMemory Operation Log:\n" RESET);
-    t_log_entry* entry = log_head; // Start at the head of the log list.
-
-    // Reverse the log list to print in chronological order.
-    t_log_entry* reversed_log = NULL;
-    while (entry)
-    {
-        t_log_entry* next = entry->next;
-        entry->next = reversed_log;
-        reversed_log = entry;
-        entry = next;
-    }
-
-    entry = reversed_log; // Traverse the reversed list.
-    while (entry)
-    {
-        // Print each log entry with appropriate formatting based on operation type.
-        switch (entry->op)
-        {
-        case MALLOC:
-            printf("%smalloc [%lu]%s of %zu bytes at %p\n", RED, entry->op_id, RESET, entry->size, entry->ptr);
-            break;
-        case CALLOC:
-            printf("%scalloc [%lu]%s of %zu bytes at %p\n", RED, entry->op_id, RESET, entry->size, entry->ptr);
-            break;
-        case REALLOC:
-            printf("%srealloc [%lu]%s to %zu bytes at %p\n", RED, entry->op_id, RESET, entry->size, entry->ptr);
-            break;
-        case FREE:
-            printf("%sfree [%lu]%s of %zu bytes from %p\n", BLUE, entry->op_id, RESET, entry->size, entry->ptr);
-            break;
-        }
-        entry = entry->next; // Move to the next log entry.
-    }
+    printf("\tCurrently allocated memory: %zu bytes\n", current_allocated);
 }

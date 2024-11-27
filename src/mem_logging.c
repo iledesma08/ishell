@@ -43,3 +43,48 @@ void clear_logs(void)
 
     log_head = NULL; // Reset the head of the log list to indicate it is empty.
 }
+
+void show_logs(void)
+{
+    // Print the memory operation log.
+    printf(YELLOW "\nOPERATIONS LOG:\n\n" RESET);
+
+    t_log_entry* entry = log_head; // Start at the head of the log list.
+    if (entry == NULL)             // If the log is empty, print a message and return.
+    {
+        printf("\tNo memory operations logged.\n");
+        return;
+    }
+
+    // Reverse the log list to print in chronological order.
+    t_log_entry* reversed_log = NULL;
+    while (entry)
+    {
+        t_log_entry* next = entry->next;
+        entry->next = reversed_log;
+        reversed_log = entry;
+        entry = next;
+    }
+
+    entry = reversed_log; // Traverse the reversed list.
+    while (entry)
+    {
+        // Print each log entry with appropriate formatting based on operation type.
+        switch (entry->op)
+        {
+        case MALLOC:
+            printf("%smalloc [%lu]%s of %zu bytes at %p\n", RED, entry->op_id, RESET, entry->size, entry->ptr);
+            break;
+        case CALLOC:
+            printf("%scalloc [%lu]%s of %zu bytes at %p\n", RED, entry->op_id, RESET, entry->size, entry->ptr);
+            break;
+        case REALLOC:
+            printf("%srealloc [%lu]%s to %zu bytes at %p\n", RED, entry->op_id, RESET, entry->size, entry->ptr);
+            break;
+        case FREE:
+            printf("%sfree [%lu]%s of %zu bytes from %p\n", GREEN, entry->op_id, RESET, entry->size, entry->ptr);
+            break;
+        }
+        entry = entry->next; // Move to the next log entry.
+    }
+}
