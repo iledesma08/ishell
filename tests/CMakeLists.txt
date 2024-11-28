@@ -40,4 +40,3 @@ add_test(NAME imemTests COMMAND tests)
 
 # Add coverage flags unconditionally for the tests binary
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -fprofile-arcs -ftest-coverage --coverage")
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lgcov --coverage")

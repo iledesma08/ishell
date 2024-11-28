@@ -1,4 +1,4 @@
-#include "../include/mem_metrics.h" // Include the header for memory metrics functionality.
+#include "mem_metrics.h" // Include the header for memory metrics functionality.
 
 // External variables from memory.c for accessing heap state and memory statistics.
 extern void* base;                    // Pointer to the start of the heap.

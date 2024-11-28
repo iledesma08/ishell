@@ -10,12 +10,12 @@
 
 #pragma once // Prevents multiple inclusions of this header file during compilation.
 
-#include "../include/calloc.h"  ///< Includes functionality for zero-initialized memory allocation.
-#include "../include/free.h"    ///< Includes functionality for freeing memory blocks.
-#include "../include/malloc.h"  ///< Includes functionality for memory allocation.
-#include "../include/memory.h"  ///< Includes core memory management structures and definitions.
-#include "../include/realloc.h" ///< Includes functionality for memory reallocation.
-#include <stdlib.h>             ///< Provides standard library functions like `exit`.
+#include "calloc.h"  ///< Includes functionality for zero-initialized memory allocation.
+#include "free.h"    ///< Includes functionality for freeing memory blocks.
+#include "malloc.h"  ///< Includes functionality for memory allocation.
+#include "memory.h"  ///< Includes core memory management structures and definitions.
+#include "realloc.h" ///< Includes functionality for memory reallocation.
+#include <stdlib.h>  ///< Provides standard library functions like `exit`.
 
 /**
  * @def ALLOCATION_SIZE_MAX

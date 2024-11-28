@@ -1,5 +1,5 @@
-#include "../include/heap_test.h"   // Include the header for heap test functionality.
-#include "../include/memory_test.h" // Include the header for memory test functionality.
+#include "heap_test.h"   // Include the header for heap test functionality.
+#include "memory_test.h" // Include the header for memory test functionality.
 
 int main(void)
 {

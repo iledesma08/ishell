@@ -9,9 +9,9 @@
 
 #pragma once // Prevents multiple inclusions of this header file during compilation.
 
-#include "../include/free.h"   ///< Includes functionality for freeing memory blocks.
-#include "../include/malloc.h" ///< Includes functionality for memory allocation.
-#include "../include/memory.h" ///< Includes definitions for memory structures and constants.
+#include "free.h"   ///< Includes functionality for freeing memory blocks.
+#include "malloc.h" ///< Includes functionality for memory allocation.
+#include "memory.h" ///< Includes definitions for memory structures and constants.
 
 /**
  * @brief Copies the contents of a source memory block to a destination block.

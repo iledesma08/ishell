@@ -1,4 +1,4 @@
-#include "../include/realloc.h" // Include header file for realloc-related functions and definitions.
+#include "realloc.h" // Include header file for realloc-related functions and definitions.
 
 extern pthread_mutex_t memory_mutex; // Mutex for thread-safe memory operations.
 unsigned long realloc_ctr = 0;       // Counter to track the number of realloc operations performed.

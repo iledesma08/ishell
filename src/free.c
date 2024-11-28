@@ -1,4 +1,4 @@
-#include "../include/free.h" // Include header for free-related functions and definitions.
+#include "free.h" // Include header for free-related functions and definitions.
 
 extern void* base;                   // Pointer to the start of the heap.
 extern pthread_mutex_t memory_mutex; // Mutex for thread-safe memory operations.

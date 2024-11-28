@@ -1,4 +1,4 @@
-#include "../include/memory.h" // Includes the custom memory management library header.
+#include "memory.h" // Includes the custom memory management library header.
 
 extern t_log_entry* log_head; // External variable pointing to the head of the memory operation log list.
 

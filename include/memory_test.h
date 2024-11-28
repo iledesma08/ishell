@@ -5,7 +5,7 @@
  * This header file provides the prototypes for functions that test the memory
  */
 
-#include "../include/mem_metrics.h" // Include the header for memory metrics functionality.
+#include "mem_metrics.h" // Include the header for memory metrics functionality.
 
 /**
  * @brief Test the memory usage function.

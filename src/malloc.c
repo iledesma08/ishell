@@ -1,4 +1,4 @@
-#include "../include/malloc.h" // Include the header file for memory allocation functions.
+#include "malloc.h" // Include the header file for memory allocation functions.
 
 extern void* base;                   // Global pointer to the beginning of the heap.
 extern int method;                   // Global variable indicating the memory allocation strategy.

@@ -9,8 +9,8 @@
 
 #pragma once // Prevents multiple inclusions of this header file during compilation.
 
-#include "../include/malloc.h" ///< Includes memory allocation functionality for custom allocator.
-#include "../include/memory.h" ///< Includes definitions for memory management structures and constants.
+#include "malloc.h" ///< Includes memory allocation functionality for custom allocator.
+#include "memory.h" ///< Includes definitions for memory management structures and constants.
 
 /**
  * @brief Allocates memory for an array of elements and initializes all bytes to zero.

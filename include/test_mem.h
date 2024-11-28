@@ -3,10 +3,10 @@
 
 #include <unity/unity.h>
 
-#include "../include/calloc.h"
-#include "../include/free.h"
-#include "../include/malloc.h"
-#include "../include/realloc.h"
+#include "calloc.h"
+#include "free.h"
+#include "malloc.h"
+#include "realloc.h"
 
 void setUp(void);
 

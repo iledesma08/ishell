@@ -9,8 +9,8 @@
 
 #pragma once // Prevents multiple inclusions of this header file during compilation.
 
-#include "../include/mem_logging.h" ///< Includes functionality for logging memory operations.
-#include "../include/memory.h"      ///< Includes custom memory management definitions.
+#include "mem_logging.h" ///< Includes functionality for logging memory operations.
+#include "memory.h"      ///< Includes custom memory management definitions.
 
 /**
  * @brief Finds a free memory block that can fit the requested size.
