@@ -50,3 +50,19 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# VSCode files
+.vscode/
+build/
+
+# Personal files
+used-cmds.md
+
+# Enviroment
+venv/
+.env
+
+# CMake
+CMakeUserPresets.json
+
+test.sh

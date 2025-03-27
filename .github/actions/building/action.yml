@@ -1,0 +1,36 @@
+name: "Build"
+description: "Executes a compilation."
+
+runs:
+  using: "composite"
+  steps:
+    - name: Compile
+      shell: bash
+      run: |
+
+        # Ensure the script exits on any command failure
+        set -e
+
+        # Define the root directory of the project (adjust if necessary)
+        PROJECT_ROOT="/home/runner/work/so-i-24-chp3-iledesma08/so-i-24-chp3-iledesma08"
+
+        # Update package list and install necessary dependencies
+        echo "Updating package list and installing dependencies..."
+        sudo apt update
+        sudo apt install -y python3-pip
+
+        # Install Conan and detect profile
+        echo "Installing Conan and setting up dependencies..."
+        pip install --upgrade conan
+        conan profile detect
+
+        # Set up and build the main project
+        echo "Setting up and building the main project..."
+        cd "$PROJECT_ROOT"
+        mkdir -p build
+        conan install . --build=missing
+        cd build
+        mkdir tests
+        cmake .. -DCMAKE_TOOLCHAIN_FILE="$PROJECT_ROOT/build/Release/generators/conan_toolchain.cmake" -DCMAKE_BUILD_TYPE=Release
+        make
+        cd "$PROJECT_ROOT"
